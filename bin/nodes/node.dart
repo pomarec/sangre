@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 abstract class Node<Output> {
-  final StreamController<Output> streamController =
-      StreamController.broadcast();
+  final BehaviorSubject<Output> streamController = BehaviorSubject();
   Stream<Output> get stream => streamController.stream;
 
   Node() {
@@ -12,6 +11,8 @@ abstract class Node<Output> {
   }
 
   onCreate() async {}
+
+  close() => streamController.close();
 }
 
 abstract class Node1Input<I1, Output> extends Node<Output> {
