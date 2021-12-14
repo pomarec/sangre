@@ -1,20 +1,19 @@
 import 'package:test/test.dart';
 
-import '../bin/operators/count.dart';
-import '../bin/sources/growing_list.dart';
-import '../bin/vena.dart';
+import '../bin/nodes/operator_node.dart';
+import '../bin/nodes/operators.dart';
+import '../bin/nodes/sources/growing_list.dart';
 
 void main() {
   test('Count operator', () {
-    final co = CountOperator();
-    final res = co.process([1, 3, 4]);
+    final res = count([1, 3, 4]);
     expect(res, equals(3));
   });
 
   test('Growling list source', () {
-    final gls = GrowingListSouce(3);
+    final gls = GrowingListSource(3);
     expect(
-      gls.egress,
+      gls.stream,
       emitsInOrder([
         [0],
         [0, 1],
@@ -25,10 +24,31 @@ void main() {
   });
 
   test('Combine growing list source with count operator', () {
-    final veina = Vena(GrowingListSouce(3), [CountOperator()]);
+    final chain = NodeOperator1Input(count, GrowingListSource(3));
     expect(
-      veina.egress,
+      chain.stream,
       emitsInOrder([1, 2, 3, emitsDone]),
     );
   });
+
+  test('Combine two growing list source with count operator', () {
+    final chain = NodeOperator2Input(
+      (Iterable a, Iterable b) => a.length + b.length,
+      GrowingListSource(3),
+      GrowingListSource(4),
+    );
+    expect(
+      chain.stream,
+      emitsInOrder([2, 3, 4, 5, 6, 7, emitsDone]),
+    );
+  });
 }
+
+
+
+// class User {}
+
+// Stream<List<User>> getUsers(String group) 
+
+//   => DB('users').to(Filter(group)).to(Join('places')).to(FetchPlaceDetail());
+
