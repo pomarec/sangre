@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartz/dartz.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class Node<Output> {
@@ -19,10 +20,10 @@ abstract class Node1Input<I1, Output> extends Node<Output> {
   final Node<I1> nodeI1;
 
   Node1Input(this.nodeI1) {
-    nodeI1.stream.map(process).pipe(streamController);
+    nodeI1.stream.asyncMap(process).pipe(streamController);
   }
 
-  Output process(I1 input) => throw UnimplementedError();
+  Future<Output> process(I1 input) async => throw UnimplementedError();
 }
 
 abstract class Node2Input<I1, I2, Output> extends Node<Output> {
@@ -33,9 +34,14 @@ abstract class Node2Input<I1, I2, Output> extends Node<Output> {
     Rx.combineLatest2(
       nodeI1.stream,
       nodeI2.stream,
-      process,
-    ).pipe(streamController);
+      (I1 a, I2 b) => Tuple2(a, b),
+    )
+        .asyncMap(
+          (tuple) async => await process(tuple.value1, tuple.value2),
+        )
+        .pipe(streamController);
   }
 
-  Output process(I1 input1, I2 input2) => throw UnimplementedError();
+  Future<Output> process(I1 input1, I2 input2) async =>
+      throw UnimplementedError();
 }

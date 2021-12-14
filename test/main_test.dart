@@ -24,7 +24,21 @@ void main() {
   });
 
   test('Combine growing list source with count operator', () {
-    final chain = NodeOperator1Input(count, GrowingListSource(3));
+    final chain = NodeOperator1Input(
+        (Iterable a) async => count(a), GrowingListSource(3));
+    expect(
+      chain.stream,
+      emitsInOrder([1, 2, 3, emitsDone]),
+    );
+  });
+
+  test('Combine growing list source with an async operator', () {
+    final chain = NodeOperator1Input(
+        (Iterable a) => Future.delayed(
+              Duration(seconds: 1),
+              () => count(a),
+            ),
+        GrowingListSource(3));
     expect(
       chain.stream,
       emitsInOrder([1, 2, 3, emitsDone]),
@@ -33,7 +47,7 @@ void main() {
 
   test('Combine two growing list source with count operator', () {
     final chain = NodeOperator2Input(
-      (Iterable a, Iterable b) => a.length + b.length,
+      (Iterable a, Iterable b) async => a.length + b.length,
       GrowingListSource(3),
       GrowingListSource(4),
     );

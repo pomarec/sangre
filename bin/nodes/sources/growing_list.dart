@@ -1,6 +1,6 @@
 import '../node.dart';
 
-class GrowingListSource extends Node<List> {
+class GrowingListSource extends Node<List<int>> {
   final List _state = [];
   final int limit;
 
