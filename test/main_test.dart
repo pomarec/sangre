@@ -3,6 +3,7 @@ import 'package:test/test.dart';
 import '../bin/nodes/operator_node.dart';
 import '../bin/nodes/operators.dart';
 import '../bin/nodes/sources/growing_list.dart';
+import 'sources/db_users.dart';
 
 void main() {
   test('Count operator', () {
@@ -25,7 +26,9 @@ void main() {
 
   test('Combine growing list source with count operator', () {
     final chain = NodeOperator1Input(
-        (Iterable a) async => count(a), GrowingListSource(3));
+      (Iterable a) async => count(a),
+      GrowingListSource(3),
+    );
     expect(
       chain.stream,
       emitsInOrder([1, 2, 3, emitsDone]),
@@ -54,6 +57,28 @@ void main() {
     expect(
       chain.stream,
       emitsInOrder([2, 3, 4, 5, 6, 7, emitsDone]),
+    );
+  });
+
+  test('React properly to source change', () async {
+    // This test has no semantic meaning, but tests source propagation
+    final dbsource = DBUsersSource();
+    final chain = NodeOperator2Input(
+      (List<User> users, Iterable b) async => users.length + b.length,
+      dbsource,
+      GrowingListSource(3),
+    );
+    expect(
+      chain.stream,
+      emitsInOrder([5, 6, 7]),
+    );
+
+    await Future.delayed(Duration(seconds: 1));
+
+    dbsource.insertUser();
+    expect(
+      chain.stream,
+      emitsInOrder([7, 8]),
     );
   });
 }
