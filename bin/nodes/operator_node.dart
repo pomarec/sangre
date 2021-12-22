@@ -28,3 +28,19 @@ class NodeOperator2Input<I1, I2, Output> extends Node2Input<I1, I2, Output> {
   Future<Output> process(I1 input1, I2 input2) async =>
       await op(input1, input2);
 }
+
+class NodeOperator3Input<I1, I2, I3, Output>
+    extends Node3Input<I1, I2, I3, Output> {
+  final Future<Output> Function(I1, I2, I3) op;
+
+  NodeOperator3Input(
+    this.op,
+    Node<I1> nodeI1,
+    Node<I2> nodeI2,
+    Node<I3> nodeI3,
+  ) : super(nodeI1, nodeI2, nodeI3);
+
+  @override
+  Future<Output> process(I1 input1, I2 input2, I3 input3) async =>
+      await op(input1, input2, input3);
+}
