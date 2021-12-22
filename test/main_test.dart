@@ -1,9 +1,11 @@
+import 'package:dartz/dartz.dart';
 import 'package:test/test.dart';
 
+import './utils.dart';
 import '../bin/nodes/operator_node.dart';
 import '../bin/nodes/operators.dart';
 import '../bin/nodes/sources/growing_list.dart';
-import 'sources/db_users.dart';
+import 'sources/fake_sql_table.dart';
 
 void main() {
   test('Count operator', () {
@@ -62,12 +64,18 @@ void main() {
 
   test('React properly to source change', () async {
     // This test has no semantic meaning, but tests source propagation
-    final dbsource = DBUsersSource();
+    final usersDBSource = FakeSQLTableSource<Tuple2<int, String>>();
     final chain = NodeOperator2Input(
-      (List<User> users, Iterable b) async => users.length + b.length,
-      dbsource,
+      (List<Tuple2<int, String>> users, Iterable b) async =>
+          users.length + b.length,
+      usersDBSource,
       GrowingListSource(3),
     );
+    for (var i = 0; i < 4; i++) {
+      usersDBSource.insertRow(
+        Tuple2(i, randomString()),
+      );
+    }
     expect(
       chain.stream,
       emitsInOrder([5, 6, 7]),
@@ -75,7 +83,9 @@ void main() {
 
     await Future.delayed(Duration(seconds: 1));
 
-    dbsource.insertUser();
+    usersDBSource.insertRow(
+      Tuple2(4, randomString()),
+    );
     expect(
       chain.stream,
       emitsInOrder([7, 8]),
@@ -84,10 +94,6 @@ void main() {
 }
 
 
-
-// class User {}
-
-// Stream<List<User>> getUsers(String group) 
 
 //   => DB('users').to(Filter(group)).to(Join('places')).to(FetchPlaceDetail());
 
