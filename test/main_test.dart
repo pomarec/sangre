@@ -91,6 +91,33 @@ void main() {
       emitsInOrder([7, 8]),
     );
   });
+
+  test('Join node', () async {
+    // This test has no semantic meaning, but tests source propagation
+    final usersDBSource = await FakeSQLTableSource<Map<String, dynamic>>();
+    for (var i = 0; i < 4; i++) {
+      usersDBSource.insertRow({
+        'id': i,
+        'name': randomString(),
+        'friend': 4 - 1 - i,
+      });
+    }
+    expect(usersDBSource.stream.valueOrNull, isNot(null));
+
+    final chain = await JoinOneToMany(
+      usersDBSource,
+      'friend',
+      usersDBSource,
+      'id',
+    );
+
+    expect(chain.stream.valueOrNull, isNot(null));
+
+    expect(
+      chain.stream.value[1]['friend'],
+      equals(usersDBSource.stream.value[2]),
+    );
+  });
 }
 
 
