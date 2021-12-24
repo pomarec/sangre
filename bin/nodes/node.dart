@@ -3,15 +3,11 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:rxdart/rxdart.dart';
 
-abstract class Node<Output> {
+import '../lib/async_init.dart';
+
+abstract class Node<Output> with AsyncInitMixin {
   final BehaviorSubject<Output> streamController = BehaviorSubject();
-  Stream<Output> get stream => streamController.stream;
-
-  Node() {
-    onCreate();
-  }
-
-  onCreate() async {}
+  ValueStream<Output> get stream => streamController.stream;
 
   close() => streamController.close();
 }
@@ -30,7 +26,10 @@ abstract class Node2Input<I1, I2, Output> extends Node<Output> {
   final Node<I1> nodeI1;
   final Node<I2> nodeI2;
 
-  Node2Input(this.nodeI1, this.nodeI2) {
+  Node2Input(this.nodeI1, this.nodeI2);
+
+  @override
+  Future<void> init() async {
     Rx.combineLatest2(
       nodeI1.stream,
       nodeI2.stream,
@@ -40,6 +39,7 @@ abstract class Node2Input<I1, I2, Output> extends Node<Output> {
           (tuple) async => await process(tuple.value1, tuple.value2),
         )
         .pipe(streamController);
+    await streamController.first;
   }
 
   Future<Output> process(I1 input1, I2 input2) async =>
@@ -51,7 +51,10 @@ abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
   final Node<I2> nodeI2;
   final Node<I3> nodeI3;
 
-  Node3Input(this.nodeI1, this.nodeI2, this.nodeI3) {
+  Node3Input(this.nodeI1, this.nodeI2, this.nodeI3);
+
+  @override
+  Future<void> init() async {
     Rx.combineLatest3(
       nodeI1.stream,
       nodeI2.stream,
@@ -63,6 +66,7 @@ abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
               await process(tuple.value1, tuple.value2, tuple.value3),
         )
         .pipe(streamController);
+    await streamController.first;
   }
 
   Future<Output> process(I1 input1, I2 input2, I3 input3) async =>
