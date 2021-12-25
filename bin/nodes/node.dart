@@ -5,6 +5,8 @@ import 'package:rxdart/rxdart.dart';
 
 import '../lib/async_init.dart';
 
+/// Any node, especially sources, have to seed their stream with
+/// at least one value before the end of init().
 abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   final BehaviorSubject<Output> streamController = BehaviorSubject();
   ValueStream<Output> get stream => streamController.stream;
@@ -15,7 +17,10 @@ abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
 abstract class Node1Input<I1, Output> extends Node<Output> {
   final Node<I1> nodeI1;
 
-  Node1Input(this.nodeI1) {
+  Node1Input(this.nodeI1);
+
+  @override
+  Future<void> init() async {
     nodeI1.stream.asyncMap(process).pipe(streamController);
   }
 

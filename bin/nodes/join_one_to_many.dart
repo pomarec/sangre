@@ -1,4 +1,4 @@
-import '../node.dart';
+import 'node.dart';
 
 class JoinOneToMany extends Node2Input<List<Map<String, dynamic>>,
     List<Map<String, dynamic>>, List<Map<String, dynamic>>> {

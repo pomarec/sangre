@@ -1,14 +1,15 @@
+// @Timeout(Duration(seconds: 10))
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:test/test.dart';
 
 import './utils.dart';
+import '../bin/nodes/join_one_to_many.dart';
 import '../bin/nodes/operator_node.dart';
 import '../bin/nodes/operators.dart';
 import '../bin/nodes/sources/growing_list.dart';
-import '../bin/nodes/sources/join_one_to_many.dart';
-import 'sources/fake_sql_table.dart';
+import '../bin/nodes/sources/list_source.dart';
 
 void main() {
   test('Count operator', () {
@@ -67,24 +68,28 @@ void main() {
 
   test('React properly to source change', () async {
     // This test has no semantic meaning, but tests source propagation
-    final usersDBSource = await FakeSQLTableSource<Tuple2<int, String>>();
+    final ListSource<Tuple2<int, String>> usersDBSource =
+        await ListSource<Tuple2<int, String>>();
+
+    for (var i = 0; i < 4; i++)
+      usersDBSource.insertRow(
+        Tuple2(i, randomString()),
+      );
+
+    final intSource = await GrowingListSource(3);
     final chain = await NodeOperator2Input(
       (List<Tuple2<int, String>> users, Iterable b) async =>
           users.length + b.length,
       usersDBSource,
-      await GrowingListSource(3),
+      intSource,
     );
-    for (var i = 0; i < 4; i++) {
-      usersDBSource.insertRow(
-        Tuple2(i, randomString()),
-      );
-    }
+
     expect(
       chain.stream,
       emitsInOrder([5, 6, 7]),
     );
 
-    await Future.delayed(Duration(seconds: 1));
+    await intSource.streamController.last;
 
     usersDBSource.insertRow(
       Tuple2(4, randomString()),
@@ -96,8 +101,8 @@ void main() {
   });
 
   test('Join node', () async {
-    final FakeSQLTableSource<Map<String, dynamic>> usersDBSource =
-        await FakeSQLTableSource<Map<String, dynamic>>();
+    final ListSource<Map<String, dynamic>> usersDBSource =
+        await ListSource<Map<String, dynamic>>();
     for (var i = 0; i < 4; i++) {
       usersDBSource.insertRow({
         'id': i,
@@ -124,8 +129,8 @@ void main() {
 
   test('Join node & source change', () async {
     // This test has no semantic meaning, but tests source propagation
-    final FakeSQLTableSource<Map<String, dynamic>> usersDBSource =
-        await FakeSQLTableSource<Map<String, dynamic>>();
+    final ListSource<Map<String, dynamic>> usersDBSource =
+        await ListSource<Map<String, dynamic>>();
     for (var i = 0; i < 4; i++) {
       usersDBSource.insertRow({
         'id': i,
