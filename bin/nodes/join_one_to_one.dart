@@ -1,11 +1,11 @@
 import 'node.dart';
 
-class JoinOneToMany extends Node2Input<List<Map<String, dynamic>>,
+class JoinOneToOne extends Node2Input<List<Map<String, dynamic>>,
     List<Map<String, dynamic>>, List<Map<String, dynamic>>> {
   final dynamic joinKey;
   final dynamic matchingKey;
 
-  JoinOneToMany(
+  JoinOneToOne(
     Node<List<Map<String, dynamic>>> nodeI1,
     this.joinKey,
     Node<List<Map<String, dynamic>>> nodeI2, [

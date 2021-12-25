@@ -5,7 +5,7 @@ import 'package:dartz/dartz.dart';
 import 'package:test/test.dart';
 
 import './utils.dart';
-import '../bin/nodes/join_one_to_many.dart';
+import '../bin/nodes/join_one_to_one.dart';
 import '../bin/nodes/operator_node.dart';
 import '../bin/nodes/operators.dart';
 import '../bin/nodes/sources/growing_list.dart';
@@ -112,7 +112,7 @@ void main() {
     }
     expect(usersDBSource.stream.valueOrNull, isNot(null));
 
-    final chain = await JoinOneToMany(
+    final chain = await JoinOneToOne(
       usersDBSource,
       'friend',
       usersDBSource,
@@ -139,7 +139,7 @@ void main() {
       });
     }
 
-    final chain = await JoinOneToMany(
+    final chain = await JoinOneToOne(
       usersDBSource,
       'friend',
       usersDBSource,
