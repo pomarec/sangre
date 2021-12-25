@@ -1,4 +1,4 @@
-import 'node.dart';
+import '../node.dart';
 
 /// A node operator is a node which process() is based on a operator
 /// An operator is a pure function.

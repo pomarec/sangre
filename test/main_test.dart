@@ -5,18 +5,12 @@ import 'package:dartz/dartz.dart';
 import 'package:test/test.dart';
 
 import './utils.dart';
-import '../bin/nodes/join_one_to_one.dart';
-import '../bin/nodes/operator_node.dart';
-import '../bin/nodes/operators.dart';
+import '../bin/nodes/operators/join_one_to_one.dart';
+import '../bin/nodes/operators/operator_node.dart';
 import '../bin/nodes/sources/growing_list.dart';
 import '../bin/nodes/sources/list_source.dart';
 
 void main() {
-  test('Count operator', () {
-    final res = count([1, 3, 4]);
-    expect(res, equals(3));
-  });
-
   test('Growling list source', () async {
     final gls = await GrowingListSource(3);
     expect(
@@ -32,7 +26,7 @@ void main() {
 
   test('Combine growing list source with count operator', () async {
     final chain = await NodeOperator1Input(
-      (Iterable a) async => count(a),
+      (Iterable a) async => a.length,
       await GrowingListSource(3),
     );
     expect(
@@ -45,7 +39,7 @@ void main() {
     final chain = await NodeOperator1Input(
         (Iterable a) => Future.delayed(
               Duration(seconds: 1),
-              () => count(a),
+              () => a.length,
             ),
         await GrowingListSource(3));
     expect(
