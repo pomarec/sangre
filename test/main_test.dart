@@ -5,6 +5,7 @@ import './utils.dart';
 import '../bin/nodes/operator_node.dart';
 import '../bin/nodes/operators.dart';
 import '../bin/nodes/sources/growing_list.dart';
+import '../bin/nodes/sources/join_one_to_many.dart';
 import 'sources/fake_sql_table.dart';
 
 void main() {
@@ -13,8 +14,8 @@ void main() {
     expect(res, equals(3));
   });
 
-  test('Growling list source', () {
-    final gls = GrowingListSource(3);
+  test('Growling list source', () async {
+    final gls = await GrowingListSource(3);
     expect(
       gls.stream,
       emitsInOrder([
@@ -26,10 +27,10 @@ void main() {
     );
   });
 
-  test('Combine growing list source with count operator', () {
-    final chain = NodeOperator1Input(
+  test('Combine growing list source with count operator', () async {
+    final chain = await NodeOperator1Input(
       (Iterable a) async => count(a),
-      GrowingListSource(3),
+      await GrowingListSource(3),
     );
     expect(
       chain.stream,
@@ -37,24 +38,24 @@ void main() {
     );
   });
 
-  test('Combine growing list source with an async operator', () {
-    final chain = NodeOperator1Input(
+  test('Combine growing list source with an async operator', () async {
+    final chain = await NodeOperator1Input(
         (Iterable a) => Future.delayed(
               Duration(seconds: 1),
               () => count(a),
             ),
-        GrowingListSource(3));
+        await GrowingListSource(3));
     expect(
       chain.stream,
       emitsInOrder([1, 2, 3, emitsDone]),
     );
   });
 
-  test('Combine two growing list source with count operator', () {
-    final chain = NodeOperator2Input(
+  test('Combine two growing list source with count operator', () async {
+    final chain = await NodeOperator2Input(
       (Iterable a, Iterable b) async => a.length + b.length,
-      GrowingListSource(3),
-      GrowingListSource(4),
+      await GrowingListSource(3),
+      await GrowingListSource(4),
     );
     expect(
       chain.stream,
@@ -64,12 +65,12 @@ void main() {
 
   test('React properly to source change', () async {
     // This test has no semantic meaning, but tests source propagation
-    final usersDBSource = FakeSQLTableSource<Tuple2<int, String>>();
-    final chain = NodeOperator2Input(
+    final usersDBSource = await FakeSQLTableSource<Tuple2<int, String>>();
+    final chain = await NodeOperator2Input(
       (List<Tuple2<int, String>> users, Iterable b) async =>
           users.length + b.length,
       usersDBSource,
-      GrowingListSource(3),
+      await GrowingListSource(3),
     );
     for (var i = 0; i < 4; i++) {
       usersDBSource.insertRow(
