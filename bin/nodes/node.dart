@@ -5,7 +5,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../lib/async_init.dart';
 
-abstract class Node<Output> with AsyncInitMixin {
+abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   final BehaviorSubject<Output> streamController = BehaviorSubject();
   ValueStream<Output> get stream => streamController.stream;
 

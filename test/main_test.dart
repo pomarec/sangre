@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
 import 'package:test/test.dart';
 
@@ -94,8 +96,8 @@ void main() {
   });
 
   test('Join node', () async {
-    // This test has no semantic meaning, but tests source propagation
-    final usersDBSource = await FakeSQLTableSource<Map<String, dynamic>>();
+    final FakeSQLTableSource<Map<String, dynamic>> usersDBSource =
+        await FakeSQLTableSource<Map<String, dynamic>>();
     for (var i = 0; i < 4; i++) {
       usersDBSource.insertRow({
         'id': i,
@@ -119,9 +121,40 @@ void main() {
       equals(usersDBSource.stream.value[2]),
     );
   });
+
+  test('Join node & source change', () async {
+    // This test has no semantic meaning, but tests source propagation
+    final FakeSQLTableSource<Map<String, dynamic>> usersDBSource =
+        await FakeSQLTableSource<Map<String, dynamic>>();
+    for (var i = 0; i < 4; i++) {
+      usersDBSource.insertRow({
+        'id': i,
+        'name': randomString(),
+        'friend': 4 - 1 - i,
+      });
+    }
+
+    final chain = await JoinOneToMany(
+      usersDBSource,
+      'friend',
+      usersDBSource,
+      'id',
+    );
+
+    usersDBSource.insertRow({
+      'id': 4,
+      'name': randomString(),
+      'friend': 3,
+    });
+
+    await usersDBSource.stream.first;
+
+    expect(
+      chain.stream.value[4]['friend'],
+      equals(usersDBSource.stream.value[3]),
+    );
+  });
 }
-
-
 
 //   => DB('users').to(Filter(group)).to(Join('places')).to(FetchPlaceDetail());
 
