@@ -154,6 +154,3 @@ void main() {
     );
   });
 }
-
-//   => DB('users').to(Filter(group)).to(Join('places')).to(FetchPlaceDetail());
-

@@ -5,13 +5,15 @@ class ListSource<Row> extends Node<List<Row>> {
 
   @override
   Future<void> init() async {
-    streamController.add([]);
+    streamController.add(_state);
   }
 
   insertRow(Row row) {
     _state.add(row);
-    streamController.add(
-      List.from(_state),
-    );
+    setRows(_state);
   }
+
+  setRows(List<Row> rows) => streamController.add(
+        List.from(rows),
+      );
 }

@@ -11,7 +11,7 @@ abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   final BehaviorSubject<Output> streamController = BehaviorSubject();
   ValueStream<Output> get stream => streamController.stream;
 
-  close() => streamController.close();
+  Future close() => streamController.close();
 }
 
 abstract class Node1Input<I1, Output> extends Node<Output> {
