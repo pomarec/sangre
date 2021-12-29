@@ -36,7 +36,6 @@ void main() async {
     expect(
       source.stream,
       emitsInOrder([
-        [],
         [
           {
             'users': {'id': 0, 'name': 'fred'}
@@ -51,11 +50,11 @@ void main() async {
 
   test('Postgres table updating', () async {
     final source = await PostgresTableSource(connection, 'users');
+
     await connection.execute("""
       INSERT INTO "users" ("id", "name") VALUES
       (2,	'patafouin');
     """);
-
     expect(
       source.stream,
       emitsInOrder([
@@ -65,7 +64,7 @@ void main() async {
           },
           {
             'users': {'id': 1, 'name': 'omar'}
-          }
+          },
         ],
         [
           {

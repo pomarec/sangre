@@ -16,5 +16,22 @@ services:
 
   adminer:
     image: adminer
+    depends_on:
+      - db
+    environment:
+      ADMINER_DESIGN: pepa-linha-dark 
     ports:
       - 8080:8080
+
+  realtime:
+    image: supabase/realtime
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: tests
+      DB_PASSWORD: example
+      SECURE_CHANNELS: false
+    ports:
+      - 4000:4000
+  
