@@ -71,6 +71,18 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
             : row,
       );
     });
+    channel.on('DELETE', (payload, {ref}) {
+      final typedRow = {
+        tableName: convertChangeData(
+          (payload['columns'] as List).cast<Map<String, dynamic>>(),
+          payload['old_record'],
+        )
+      };
+      updateRows(
+        (row) =>
+            row[tableName]!['id'] == typedRow[tableName]!['id'] ? null : row,
+      );
+    });
 
     realtimeSocket.connect();
     channel.subscribe();

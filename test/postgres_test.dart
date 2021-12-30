@@ -113,6 +113,33 @@ void main() async {
       ]),
     );
   });
+
+  test('Postgres table deleting', () async {
+    final source = await PostgresTableSource(connection, 'users');
+
+    await connection.execute("""
+      DELETE FROM "users"
+      WHERE "id" = 0;
+    """);
+    expect(
+      source.stream,
+      emitsInOrder([
+        [
+          {
+            'users': {'id': 0, 'name': 'fred'}
+          },
+          {
+            'users': {'id': 1, 'name': 'omar'}
+          },
+        ],
+        [
+          {
+            'users': {'id': 1, 'name': 'omar'}
+          },
+        ],
+      ]),
+    );
+  });
 }
 
 //   => DB('users').to(Filter(group)).to(Join('places')).to(FetchPlaceDetail());
