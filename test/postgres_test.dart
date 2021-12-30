@@ -24,6 +24,8 @@ void main() async {
           "name" character varying NOT NULL
       ) WITH (oids = false);
 
+      ALTER TABLE "users" REPLICA IDENTITY FULL;
+
       INSERT INTO "users" ("id", "name") VALUES
       (0,	'fred'),
       (1,	'omar');
@@ -48,7 +50,7 @@ void main() async {
     );
   });
 
-  test('Postgres table updating', () async {
+  test('Postgres table inserting', () async {
     final source = await PostgresTableSource(connection, 'users');
 
     await connection.execute("""
@@ -76,6 +78,37 @@ void main() async {
           {
             'users': {'id': 2, 'name': 'patafouin'}
           }
+        ],
+      ]),
+    );
+  });
+
+  test('Postgres table updating', () async {
+    final source = await PostgresTableSource(connection, 'users');
+
+    await connection.execute("""
+      UPDATE "users"
+      SET "name" = 'omarys'
+      WHERE "id" = 1;
+    """);
+    expect(
+      source.stream,
+      emitsInOrder([
+        [
+          {
+            'users': {'id': 0, 'name': 'fred'}
+          },
+          {
+            'users': {'id': 1, 'name': 'omar'}
+          },
+        ],
+        [
+          {
+            'users': {'id': 0, 'name': 'fred'}
+          },
+          {
+            'users': {'id': 1, 'name': 'omarys'}
+          },
         ],
       ]),
     );

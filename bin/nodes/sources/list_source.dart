@@ -18,7 +18,7 @@ class ListSource<Row> extends Node<List<Row>> {
     streamController.add(_state);
   }
 
-  updateRow(Row? Function(Row) map) {
+  updateRows(Row? Function(Row) map) {
     _state = List<Row>.from(_state)
         .map(map)
         .where((e) => e != null)

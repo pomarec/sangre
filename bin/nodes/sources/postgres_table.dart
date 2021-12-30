@@ -58,6 +58,19 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
         ),
       }),
     );
+    channel.on('UPDATE', (payload, {ref}) {
+      final typedRow = {
+        tableName: convertChangeData(
+          (payload['columns'] as List).cast<Map<String, dynamic>>(),
+          payload['record'],
+        )
+      };
+      updateRows(
+        (row) => row[tableName]!['id'] == typedRow[tableName]!['id']
+            ? typedRow
+            : row,
+      );
+    });
 
     realtimeSocket.connect();
     channel.subscribe();
