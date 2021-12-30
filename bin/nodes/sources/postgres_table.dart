@@ -59,15 +59,21 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
       }),
     );
     channel.on('UPDATE', (payload, {ref}) {
-      final typedRow = {
+      final typedOldRow = {
+        tableName: convertChangeData(
+          (payload['columns'] as List).cast<Map<String, dynamic>>(),
+          payload['old_record'],
+        )
+      };
+      final typedNewRow = {
         tableName: convertChangeData(
           (payload['columns'] as List).cast<Map<String, dynamic>>(),
           payload['record'],
         )
       };
       updateRows(
-        (row) => row[tableName]!['id'] == typedRow[tableName]!['id']
-            ? typedRow
+        (row) => row[tableName]!['id'] == typedOldRow[tableName]!['id']
+            ? typedNewRow
             : row,
       );
     });

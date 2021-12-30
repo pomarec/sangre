@@ -114,6 +114,37 @@ void main() async {
     );
   });
 
+  test('Postgres table updating id', () async {
+    final source = await PostgresTableSource(connection, 'users');
+
+    await connection.execute("""
+      UPDATE "users"
+      SET "id" = 3, "name" = 'omarys'
+      WHERE "id" = 1;
+    """);
+    expect(
+      source.stream,
+      emitsInOrder([
+        [
+          {
+            'users': {'id': 0, 'name': 'fred'}
+          },
+          {
+            'users': {'id': 1, 'name': 'omar'}
+          },
+        ],
+        [
+          {
+            'users': {'id': 0, 'name': 'fred'}
+          },
+          {
+            'users': {'id': 3, 'name': 'omarys'}
+          },
+        ],
+      ]),
+    );
+  });
+
   test('Postgres table deleting', () async {
     final source = await PostgresTableSource(connection, 'users');
 
