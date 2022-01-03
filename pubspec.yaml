@@ -7,10 +7,12 @@ environment:
 
 dependencies:
   dartz: ^0.10.1
+  json_patch: ^3.0.0
   postgres: ^2.4.3
   realtime_client: ^0.1.12+1
   rxdart: ^0.27.3
-  test: ^1.19.2
 
 dev_dependencies:
+  alfred: ^0.1.5+3
   lints: ^1.0.0
+  test: ^1.19.2
