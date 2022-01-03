@@ -181,12 +181,12 @@ void main() async {
       CREATE TABLE "public"."users" (
           "id" integer NOT NULL,
           "name" character varying NOT NULL,
-          "parent" integer NOT NULL
+          "parent_id" integer NOT NULL
       ) WITH (oids = false);
 
       ALTER TABLE "users" REPLICA IDENTITY FULL;
 
-      INSERT INTO "users" ("id", "name", "parent") VALUES
+      INSERT INTO "users" ("id", "name", "parent_id") VALUES
       (0,	'fred', 1),
       (1,	'omar', 0),
       (2,	'pataf', 0),
@@ -195,14 +195,13 @@ void main() async {
     await connection.execute(sql);
 
     // Setup nodes
-
     final usersDBSource = await PostgresTableSource(connection, 'users');
-
     final usersWithParent = await JoinOneToOne(
       usersDBSource,
-      'parent',
+      (e) => e['users']['parent_id'],
       usersDBSource,
-      'id',
+      (e) => e['users']['id'],
+      (e, v) => e['parent'] = v,
     );
     final usersWithChildrenCount = await NodeOperator1Input(
       (a) async => a,
@@ -215,27 +214,27 @@ void main() async {
       emitsInOrder([
         [
           {
-            'users': {'id': 0, 'name': "fred", 'parent': 1},
+            'users': {'id': 0, 'name': "fred", 'parent_id': 1},
             'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent': 1}
+              'users': {'id': 1, 'name': "omar", 'parent_id': 0}
             }
           },
           {
-            'users': {'id': 1, 'name': "omar", 'parent': 0},
+            'users': {'id': 1, 'name': "omar", 'parent_id': 0},
             'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent': 1}
+              'users': {'id': 0, 'name': "fred", 'parent_id': 1}
             }
           },
           {
-            'users': {'id': 2, 'name': "pataf", 'parent': 0},
+            'users': {'id': 2, 'name': "pataf", 'parent_id': 0},
             'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent': 1}
+              'users': {'id': 0, 'name': "fred", 'parent_id': 1}
             }
           },
           {
-            'users': {'id': 3, 'name': "skavinski", 'parent': 0},
+            'users': {'id': 3, 'name': "skavinski", 'parent_id': 0},
             'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent': 1}
+              'users': {'id': 0, 'name': "fred", 'parent_id': 1}
             }
           }
         ]
