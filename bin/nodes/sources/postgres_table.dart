@@ -8,25 +8,32 @@ import 'list_source.dart';
 typedef PostgresRowMap = Map<String, Map<String, dynamic>>;
 
 class PostgresTableSource extends ListSource<PostgresRowMap> {
-  final PostgreSQLConnection connection;
+  final PostgreSQLConnection postgresClient;
+  final RealtimeClient? realtimeClient;
   final String tableName;
 
   StreamController<List<PostgresRowMap>>? _queryStreamController;
-  RealtimeClient? _realtimeSocket;
+  RealtimeSubscription? _realtimeChannel;
 
-  PostgresTableSource(this.connection, this.tableName);
+  PostgresTableSource(
+    this.postgresClient,
+    this.tableName, [
+    this.realtimeClient,
+  ]);
 
   @override
   Future<void> init() async {
     await super.init();
     setRows(await _fetchResults());
 
-    // await setupPolling();
-    await setupRealtime();
+    if (realtimeClient != null)
+      await setupRealtime();
+    else
+      await setupPolling();
   }
 
   Future<List<PostgresRowMap>> _fetchResults() async =>
-      connection.mappedResultsQuery(
+      postgresClient.mappedResultsQuery(
         "SELECT * FROM $tableName",
       );
 
@@ -41,68 +48,69 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
   }
 
   setupRealtime() async {
-    final realtimeSocket = RealtimeClient(
-      'ws://localhost:4000/socket',
-      logger: (kind, msg, data) => print('$kind $msg $data'),
-    );
-
-    _realtimeSocket = _realtimeSocket;
-
-    final channel = realtimeSocket.channel('realtime:public:$tableName');
-    channel.on(
-      'INSERT',
-      (payload, {ref}) => insertRow({
-        tableName: convertChangeData(
-          (payload['columns'] as List).cast<Map<String, dynamic>>(),
-          payload['record'],
-        ),
-      }),
-    );
-    channel.on('UPDATE', (payload, {ref}) {
-      final typedOldRow = {
-        tableName: convertChangeData(
-          (payload['columns'] as List).cast<Map<String, dynamic>>(),
-          payload['old_record'],
-        )
-      };
-      final typedNewRow = {
-        tableName: convertChangeData(
-          (payload['columns'] as List).cast<Map<String, dynamic>>(),
-          payload['record'],
-        )
-      };
-      updateRows(
-        (row) => row[tableName]!['id'] == typedOldRow[tableName]!['id']
-            ? typedNewRow
-            : row,
+    if (realtimeClient != null) {
+      final channel = realtimeClient!.channel('realtime:public:$tableName');
+      _realtimeChannel = channel;
+      channel.on(
+        'INSERT',
+        (payload, {ref}) => insertRow({
+          tableName: convertChangeData(
+            (payload['columns'] as List).cast<Map<String, dynamic>>(),
+            payload['record'],
+          ),
+        }),
       );
-    });
-    channel.on('DELETE', (payload, {ref}) {
-      final typedRow = {
-        tableName: convertChangeData(
-          (payload['columns'] as List).cast<Map<String, dynamic>>(),
-          payload['old_record'],
-        )
-      };
-      updateRows(
-        (row) =>
-            row[tableName]!['id'] == typedRow[tableName]!['id'] ? null : row,
+      channel.on(
+        'UPDATE',
+        (payload, {ref}) {
+          final typedOldRow = {
+            tableName: convertChangeData(
+              (payload['columns'] as List).cast<Map<String, dynamic>>(),
+              payload['old_record'],
+            )
+          };
+          final typedNewRow = {
+            tableName: convertChangeData(
+              (payload['columns'] as List).cast<Map<String, dynamic>>(),
+              payload['record'],
+            )
+          };
+          updateRows(
+            (row) => row[tableName]!['id'] == typedOldRow[tableName]!['id']
+                ? typedNewRow
+                : row,
+          );
+        },
       );
-    });
+      channel.on(
+        'DELETE',
+        (payload, {ref}) {
+          final typedRow = {
+            tableName: convertChangeData(
+              (payload['columns'] as List).cast<Map<String, dynamic>>(),
+              payload['old_record'],
+            )
+          };
+          updateRows(
+            (row) => row[tableName]!['id'] == typedRow[tableName]!['id']
+                ? null
+                : row,
+          );
+        },
+      );
+      channel.subscribe();
 
-    realtimeSocket.connect();
-    channel.subscribe();
-
-    // Wait for channel to be joined
-    int maxRetries = 5;
-    while (!channel.isJoined() && maxRetries-- > 0)
-      await Future.delayed(Duration(milliseconds: 200));
+      // Wait for channel to be joined
+      int maxRetries = 5;
+      while (!channel.isJoined() && maxRetries-- > 0)
+        await Future.delayed(Duration(milliseconds: 200));
+    }
   }
 
   @override
   Future close() async {
     await super.close();
     await _queryStreamController?.close();
-    _realtimeSocket?.disconnect();
+    _realtimeChannel?.unsubscribe();
   }
 }
