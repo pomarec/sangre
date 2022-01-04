@@ -5,6 +5,8 @@ import 'package:rxdart/rxdart.dart';
 
 import '../async_init.dart';
 
+export '../async_init.dart';
+
 /// Any node, especially sources, have to seed their stream with
 /// at least one value before the end of init().
 abstract class Node<Output> with AsyncInitMixin<Node<Output>> {

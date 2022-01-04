@@ -34,11 +34,12 @@ void main() {
 
   test('Combine growing list source with an async operator', () async {
     final chain = await NodeOperator1Input(
-        (Iterable a) => Future.delayed(
-              Duration(seconds: 1),
-              () => a.length,
-            ),
-        await GrowingListSource(3));
+      (Iterable a) => Future.delayed(
+        Duration(seconds: 1),
+        () => a.length,
+      ),
+      await GrowingListSource(3),
+    );
     expect(
       chain.stream,
       emitsInOrder([1, 2, 3, emitsDone]),

@@ -9,6 +9,7 @@ class ListSource<Row> extends Node<List<Row>> {
   }
 
   insertRow(Row row) {
+    _state = List.from(_state);
     _state.add(row);
     setRows(_state);
   }

@@ -35,7 +35,7 @@ services:
     ports:
       - 4000:4000
 
-  tests:
+  test:
     build:
       context: ../
       dockerfile: test/Dockerfile
