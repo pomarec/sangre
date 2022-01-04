@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../lib/async_init.dart';
+import '../async_init.dart';
 
 /// Any node, especially sources, have to seed their stream with
 /// at least one value before the end of init().

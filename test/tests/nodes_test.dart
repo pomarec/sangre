@@ -2,13 +2,10 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
+import 'package:sangre/sangre.dart';
 import 'package:test/test.dart';
 
-import './utils.dart';
-import '../bin/nodes/operators/join_one_to_one.dart';
-import '../bin/nodes/operators/operator_node.dart';
-import '../bin/nodes/sources/growing_list.dart';
-import '../bin/nodes/sources/list_source.dart';
+import '../utils.dart';
 
 void main() {
   test('Growling list source', () async {

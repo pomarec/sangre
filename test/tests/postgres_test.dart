@@ -1,23 +1,20 @@
 // @Timeout(Duration(seconds: 10))
 
-import 'package:postgres/postgres.dart';
-import 'package:realtime_client/realtime_client.dart';
+import 'package:sangre/sangre.dart';
 import 'package:test/test.dart';
 
-import '../bin/nodes/operators/join_one_to_one.dart';
-import '../bin/nodes/operators/operator_node.dart';
-import '../bin/nodes/sources/postgres_table.dart';
+import '../env.dart';
 
 void main() async {
   var postgresClient = PostgreSQLConnection(
-    "localhost",
+    postgresServerAddress,
     5432,
     "tests",
     username: "postgres",
     password: "example",
   );
   final realtimeClient = RealtimeClient(
-    'ws://localhost:4000/socket',
+    'ws://$realtimeServerAddress:4000/socket',
     // logger: (kind, msg, data) => print('$kind $msg $data'),
   );
   await postgresClient.open();

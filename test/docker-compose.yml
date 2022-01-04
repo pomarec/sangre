@@ -34,4 +34,14 @@ services:
       SECURE_CHANNELS: false
     ports:
       - 4000:4000
-  
+
+  tests:
+    build:
+      context: ../
+      dockerfile: test/Dockerfile
+    depends_on:
+      - db
+      - realtime
+    environment:
+      POSTGRES_SERVER: db
+      REALTIME_SERVER: realtime
