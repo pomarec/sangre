@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:alfred/alfred.dart';
-import 'package:alfred/src/type_handlers/websocket_type_handler.dart';
 import 'package:http/http.dart';
 import 'package:sangre/sangre.dart';
 import 'package:test/test.dart';
@@ -21,7 +20,7 @@ void main() async {
 
   test('Retrieve user list', () async {
     var channel = WebSocketChannel.connect(Uri.parse(
-      'ws://$realtimeServerAddress:${server?.port ?? 4000}/users',
+      'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users',
     ));
 
     final parsedResponse = channel.stream.cast<String>().map(json.decode);
@@ -61,7 +60,7 @@ void main() async {
 
   test('Retrieve user list diffed and user added', () async {
     var channel = WebSocketChannel.connect(Uri.parse(
-      'ws://$realtimeServerAddress:${server?.port ?? 4000}/users-diffed',
+      'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users-diffed',
     ));
     final parsedResponse = channel.stream.cast<String>().map(json.decode);
 
@@ -75,34 +74,28 @@ void main() async {
       emitsInOrder([
         [
           {
-            "op": "replace",
-            "path": "",
-            "value": [
-              {
-                "users": {"id": 0, "name": "fred", "parent_id": 1},
-                "parent": {
-                  "users": {"id": 1, "name": "omar", "parent_id": 0}
-                }
-              },
-              {
-                "users": {"id": 1, "name": "omar", "parent_id": 0},
-                "parent": {
-                  "users": {"id": 0, "name": "fred", "parent_id": 1}
-                }
-              },
-              {
-                "users": {"id": 2, "name": "pataf", "parent_id": 0},
-                "parent": {
-                  "users": {"id": 0, "name": "fred", "parent_id": 1}
-                }
-              },
-              {
-                "users": {"id": 3, "name": "skavinski", "parent_id": 0},
-                "parent": {
-                  "users": {"id": 0, "name": "fred", "parent_id": 1}
-                }
-              }
-            ]
+            "users": {"id": 0, "name": "fred", "parent_id": 1},
+            "parent": {
+              "users": {"id": 1, "name": "omar", "parent_id": 0}
+            }
+          },
+          {
+            "users": {"id": 1, "name": "omar", "parent_id": 0},
+            "parent": {
+              "users": {"id": 0, "name": "fred", "parent_id": 1}
+            }
+          },
+          {
+            "users": {"id": 2, "name": "pataf", "parent_id": 0},
+            "parent": {
+              "users": {"id": 0, "name": "fred", "parent_id": 1}
+            }
+          },
+          {
+            "users": {"id": 3, "name": "skavinski", "parent_id": 0},
+            "parent": {
+              "users": {"id": 0, "name": "fred", "parent_id": 1}
+            }
           }
         ],
         [
@@ -121,12 +114,13 @@ void main() async {
     );
   });
 
-  test('Just run web server', () async {
-    await Future.delayed(Duration(hours: 10000));
-  }, timeout: Timeout.none);
+  // test('Just run web server', () async {
+  //   await Future.delayed(Duration(hours: 10000));
+  // }, timeout: Timeout.none);
 }
 
 Future<HttpServer> setupServer() async {
+  // Setup db & realtime clients
   var postgresClient = PostgreSQLConnection(
     postgresServerAddress,
     5432,
@@ -139,7 +133,7 @@ Future<HttpServer> setupServer() async {
   await postgresClient.open();
   realtimeClient.connect();
 
-  // Setup db
+  // Setup db data
   final sql = """
       DROP TABLE IF EXISTS "users";
       CREATE TABLE "public"."users" (
@@ -170,38 +164,15 @@ Future<HttpServer> setupServer() async {
   );
 
   // Setup api server
-  final app = Alfred();
-
-  app.get(
-    '/users',
-    (req, res) => WebSocketSession(onOpen: (ws) {
-      usersWithParent.stream.listen(
-        (data) => ws.send(json.encode(data)),
-      );
-    }),
-  );
-
-  final usersDiffed = await Diffed(usersWithParent);
-  app.get(
-    '/users-diffed',
-    (req, res) => WebSocketSession(onOpen: (ws) {
-      ws.send(json.encode(usersDiffed.lastValue));
-      usersDiffed.stream.listen(
-        (data) => ws.send(json.encode(data)),
-      );
-    }),
-  );
-
-  app.get(
-    '/addUser',
-    (req, res) async {
+  final app = Alfred()
+    ..sangre('/users', usersWithParent)
+    ..get('/addUser', (req, res) async {
       final name = req.uri.queryParameters['name'];
       await postgresClient.execute("""
-        INSERT INTO "users" ("id", "name", "parent_id") VALUES
-        (${usersWithParent.stream.value.length},	'${name ?? randomString()}', 1);
-      """);
-    },
-  );
+          INSERT INTO "users" ("id", "name", "parent_id") VALUES
+          (${usersWithParent.stream.value.length},	'${name ?? randomString()}', 1);
+        """);
+    });
 
   // app.printRoutes();
   return await app.listen();

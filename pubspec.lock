@@ -9,7 +9,7 @@ packages:
     source: hosted
     version: "31.0.0"
   alfred:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: alfred
       url: "https://pub.dartlang.org"

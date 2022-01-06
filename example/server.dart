@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:alfred/alfred.dart';
-import 'package:alfred/src/type_handlers/websocket_type_handler.dart';
 import 'package:sangre/sangre.dart';
 
 void main() async {
@@ -38,38 +35,18 @@ void main() async {
       await PostgresTableSource(postgresClient, 'users', realtimeClient);
 
   // Setup api server
-  final app = Alfred();
-
-  app.get(
-    '/users',
-    (req, res) => WebSocketSession(onOpen: (ws) {
-      usersDBSource.stream.listen(
-        (data) => ws.send(json.encode(data)),
-      );
-    }),
-  );
-
-  final usersDiffed = await Diffed(usersDBSource);
-  app.get(
-    '/users-diffed',
-    (req, res) => WebSocketSession(onOpen: (ws) {
-      ws.send(json.encode(usersDiffed.lastValue));
-      usersDiffed.stream.skip(1).listen(
-            (data) => ws.send(json.encode(data)),
-          );
-    }),
-  );
-
-  app.get(
-    '/addUser',
-    (req, res) async {
-      final name = req.uri.queryParameters['name'];
-      await postgresClient.execute("""
+  final app = Alfred()
+    ..sangre('/users', usersDBSource)
+    ..get(
+      '/addUser',
+      (req, res) async {
+        final name = req.uri.queryParameters['name'];
+        await postgresClient.execute("""
         INSERT INTO "users" ("id", "name") VALUES
         (${usersDBSource.stream.value.length},	'${name ?? "nobody"}');
       """);
-    },
-  );
+      },
+    );
 
   // app.printRoutes();
   await app.listen();

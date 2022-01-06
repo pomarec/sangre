@@ -18,7 +18,7 @@ class _UsersListState extends State<UsersList> {
   void initState() {
     super.initState();
     final channel = WebSocketChannel.connect(Uri.parse(
-      'ws://localhost:3000/users',
+      'ws://localhost:3000/ws/users',
     ));
     usersStream = channel.stream.cast<String>().map(json.decode).cast<List>();
   }

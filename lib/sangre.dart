@@ -1,6 +1,7 @@
 export 'package:postgres/postgres.dart';
 export 'package:realtime_client/realtime_client.dart';
 
+export 'alfred.dart';
 export 'nodes/node.dart';
 export 'nodes/operators/diffed.dart';
 export 'nodes/operators/join_one_to_one.dart';

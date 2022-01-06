@@ -9,6 +9,7 @@ scripts:
   test: docker-compose -f test/docker-compose.yml run test
 
 dependencies:
+  alfred: ^0.1.5+3
   dartz: ^0.10.1
   json_patch: ^3.0.0
   postgres: ^2.4.3
@@ -17,7 +18,6 @@ dependencies:
   web_socket_channel: ^2.1.0
 
 dev_dependencies:
-  alfred: ^0.1.5+3
   http: ^0.13.4
   lints: ^1.0.0
   test: ^1.19.2

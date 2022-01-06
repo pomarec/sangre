@@ -20,7 +20,7 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
   void initState() {
     super.initState();
     final channel = WebSocketChannel.connect(Uri.parse(
-      'ws://localhost:3000/users-diffed',
+      'ws://localhost:3000/ws/users-diffed',
     ));
     final usersDiffedStream =
         channel.stream.cast<String>().map(json.decode).asBroadcastStream();
