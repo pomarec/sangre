@@ -7,7 +7,7 @@ import 'package:alfred/src/type_handlers/websocket_type_handler.dart';
 import 'package:http/http.dart';
 import 'package:sangre/sangre.dart';
 import 'package:test/test.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../env.dart';
 import '../utils.dart';
@@ -20,7 +20,7 @@ void main() async {
   });
 
   test('Retrieve user list', () async {
-    var channel = IOWebSocketChannel.connect(Uri.parse(
+    var channel = WebSocketChannel.connect(Uri.parse(
       'ws://$realtimeServerAddress:${server?.port ?? 4000}/users',
     ));
 
@@ -60,7 +60,7 @@ void main() async {
   });
 
   test('Retrieve user list diffed and user added', () async {
-    var channel = IOWebSocketChannel.connect(Uri.parse(
+    var channel = WebSocketChannel.connect(Uri.parse(
       'ws://$realtimeServerAddress:${server?.port ?? 4000}/users-diffed',
     ));
     final parsedResponse = channel.stream.cast<String>().map(json.decode);
