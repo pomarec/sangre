@@ -1,0 +1,16 @@
+name: client
+description: A new Flutter project.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.13.4
+  json_patch: ^3.0.0
+  web_socket_channel: ^2.1.0
+
+flutter:
+  uses-material-design: true

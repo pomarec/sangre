@@ -120,6 +120,10 @@ void main() async {
       ]),
     );
   });
+
+  test('Just run web server', () async {
+    await Future.delayed(Duration(hours: 10000));
+  }, timeout: Timeout.none);
 }
 
 Future<HttpServer> setupServer() async {
@@ -181,6 +185,7 @@ Future<HttpServer> setupServer() async {
   app.get(
     '/users-diffed',
     (req, res) => WebSocketSession(onOpen: (ws) {
+      ws.send(json.encode(usersDiffed.lastValue));
       usersDiffed.stream.listen(
         (data) => ws.send(json.encode(data)),
       );
