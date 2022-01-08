@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:alfred/alfred.dart';
 import 'package:http/http.dart';
+import 'package:json_patch/json_patch.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:sangre/sangre.dart';
 import 'package:test/test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -18,100 +20,129 @@ void main() async {
     server = await setupServer();
   });
 
-  test('Retrieve user list', () async {
-    var channel = WebSocketChannel.connect(Uri.parse(
-      'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users',
-    ));
+  group('User list', () {
+    Stream? usersStream;
 
-    final parsedResponse = channel.stream.cast<String>().map(json.decode);
+    setUp(() async {
+      usersStream = WebSocketChannel.connect(Uri.parse(
+        'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users',
+      )).stream.cast<String>().map(json.decode);
+    });
 
-    expect(
-      parsedResponse,
-      emitsInOrder([
-        [
-          {
-            "users": {"id": 0, "name": "fred", "parent_id": 1},
-            "parent": {
-              "users": {"id": 1, "name": "omar", "parent_id": 0}
-            }
-          },
-          {
-            "users": {"id": 1, "name": "omar", "parent_id": 0},
-            "parent": {
-              "users": {"id": 0, "name": "fred", "parent_id": 1}
-            }
-          },
-          {
-            "users": {"id": 2, "name": "pataf", "parent_id": 0},
-            "parent": {
-              "users": {"id": 0, "name": "fred", "parent_id": 1}
-            }
-          },
-          {
-            "users": {"id": 3, "name": "skavinski", "parent_id": 0},
-            "parent": {
-              "users": {"id": 0, "name": "fred", "parent_id": 1}
-            }
-          }
-        ],
-      ]),
-    );
-  });
+    test('Retrieve', () async {
+      expect(
+        usersStream,
+        emitsInOrder([_usersBeforeAdd]),
+      );
+    });
 
-  test('Retrieve user list diffed and user added', () async {
-    var channel = WebSocketChannel.connect(Uri.parse(
-      'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users-diffed',
-    ));
-    final parsedResponse = channel.stream.cast<String>().map(json.decode);
+    test('Retrieve and add user', () async {
+      final newUserName = randomString();
+      await get(Uri.parse(
+        "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
+      ));
 
-    final newUserName = randomString();
-    await get(Uri.parse(
-      "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
-    ));
-
-    expect(
-      parsedResponse,
-      emitsInOrder([
-        [
-          {
-            "users": {"id": 0, "name": "fred", "parent_id": 1},
-            "parent": {
-              "users": {"id": 1, "name": "omar", "parent_id": 0}
-            }
-          },
-          {
-            "users": {"id": 1, "name": "omar", "parent_id": 0},
-            "parent": {
-              "users": {"id": 0, "name": "fred", "parent_id": 1}
-            }
-          },
-          {
-            "users": {"id": 2, "name": "pataf", "parent_id": 0},
-            "parent": {
-              "users": {"id": 0, "name": "fred", "parent_id": 1}
-            }
-          },
-          {
-            "users": {"id": 3, "name": "skavinski", "parent_id": 0},
-            "parent": {
-              "users": {"id": 0, "name": "fred", "parent_id": 1}
-            }
-          }
-        ],
-        [
-          {
-            'op': 'add',
-            'path': '/-',
-            'value': {
+      expect(
+        usersStream,
+        emitsInOrder([
+          _usersBeforeAdd,
+          [
+            ..._usersBeforeAdd,
+            {
               'users': {'id': 4, 'name': newUserName, 'parent_id': 1},
               'parent': {
                 'users': {'id': 1, 'name': 'omar', 'parent_id': 0}
               }
             }
-          }
-        ],
-      ]),
-    );
+          ]
+        ]),
+      );
+    });
+  });
+
+  group('User list diffed', () {
+    Stream _buildUsersStream([int lastRevision = 0, List? lastUsers]) =>
+        WebSocketChannel.connect(Uri.parse(
+          'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users-diffed?from=$lastRevision',
+        )).stream.cast<String>().doOnData(print).map(json.decode).foldStream(
+          {'revision': lastRevision, 'users': lastUsers ?? []},
+          (previous, diffs) => {
+            'revision': diffs['revision'],
+            'users': JsonPatch.apply(
+              previous['users'],
+              (diffs['diffs'] as List).cast<Map<String, dynamic>>(),
+              strict: false,
+            ),
+          },
+        );
+
+    Stream? usersStream;
+
+    setUp(() async {
+      usersStream = _buildUsersStream();
+    });
+
+    test('Retrieve', () async {
+      expect(
+        usersStream?.map((e) => e['users']),
+        emitsInOrder([_usersBeforeAdd]),
+      );
+    });
+
+    test('Retrieve and add user', () async {
+      final newUserName = randomString();
+      await get(Uri.parse(
+        "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
+      ));
+
+      expect(
+        usersStream?.map((e) => e['users']),
+        emitsInOrder([
+          _usersBeforeAdd,
+          [
+            ..._usersBeforeAdd,
+            {
+              'users': {'id': 4, 'name': newUserName, 'parent_id': 1},
+              'parent': {
+                'users': {'id': 1, 'name': 'omar', 'parent_id': 0}
+              }
+            }
+          ]
+        ]),
+      );
+    });
+
+    test('Retrieve and add user with history', () async {
+      final lastData = await usersStream?.first;
+
+      expect(lastData['revision'], equals(1));
+      expect(lastData['users'], equals(_usersBeforeAdd));
+
+      final newUserName = randomString();
+      await get(Uri.parse(
+        "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
+      ));
+
+      final newUsersStream = _buildUsersStream(
+        lastData['revision'],
+        lastData['users'],
+      );
+
+      expect(
+        newUsersStream.map((e) => e['users']),
+        emitsInOrder([
+          [
+            ..._usersBeforeAdd,
+            {
+              'users': {'id': 4, 'name': newUserName, 'parent_id': 1},
+              'parent': {
+                'users': {'id': 1, 'name': 'omar', 'parent_id': 0}
+              }
+            }
+          ]
+        ]),
+      );
+    });
   });
 
   // test('Just run web server', () async {
@@ -165,7 +196,7 @@ Future<HttpServer> setupServer() async {
 
   // Setup api server
   final app = Alfred()
-    ..sangre('/users', usersWithParent)
+    ..sangre('/users', usersWithParent, postgresClient)
     ..get('/addUser', (req, res) async {
       final name = req.uri.queryParameters['name'];
       await postgresClient.execute("""
@@ -177,3 +208,30 @@ Future<HttpServer> setupServer() async {
   // app.printRoutes();
   return await app.listen();
 }
+
+final _usersBeforeAdd = [
+  {
+    "users": {"id": 0, "name": "fred", "parent_id": 1},
+    "parent": {
+      "users": {"id": 1, "name": "omar", "parent_id": 0}
+    }
+  },
+  {
+    "users": {"id": 1, "name": "omar", "parent_id": 0},
+    "parent": {
+      "users": {"id": 0, "name": "fred", "parent_id": 1}
+    }
+  },
+  {
+    "users": {"id": 2, "name": "pataf", "parent_id": 0},
+    "parent": {
+      "users": {"id": 0, "name": "fred", "parent_id": 1}
+    }
+  },
+  {
+    "users": {"id": 3, "name": "skavinski", "parent_id": 0},
+    "parent": {
+      "users": {"id": 0, "name": "fred", "parent_id": 1}
+    }
+  }
+];

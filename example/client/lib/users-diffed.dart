@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:json_patch/json_patch.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+// TODO : adpat to new api with "revision" in Diffed
+
 class UsersDiffedList extends StatefulWidget {
   const UsersDiffedList({Key? key}) : super(key: key);
 

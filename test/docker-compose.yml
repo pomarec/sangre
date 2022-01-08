@@ -5,10 +5,9 @@ volumes:
 
 services:
   db:
-    image: postgres
+    image: postgres:14.1-alpine
     environment:
       POSTGRES_PASSWORD: example
-      PGDATA: /var/lib/postgresql/data/pgdata
     volumes: 
       - db-data:/var/lib/postgresql/data
     ports:

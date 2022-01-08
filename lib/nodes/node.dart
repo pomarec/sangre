@@ -13,6 +13,9 @@ abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   final BehaviorSubject<Output> streamController = BehaviorSubject();
   ValueStream<Output> get stream => streamController.stream;
 
+  String get id =>
+      "nodeid"; // TODO : implement mechanism for each node to "compute" a unique id
+
   Future close() => streamController.close();
 }
 

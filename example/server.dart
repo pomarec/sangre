@@ -36,7 +36,7 @@ void main() async {
 
   // Setup api server
   final app = Alfred()
-    ..sangre('/users', usersDBSource)
+    ..sangre('/users', usersDBSource, postgresClient)
     ..get(
       '/addUser',
       (req, res) async {
