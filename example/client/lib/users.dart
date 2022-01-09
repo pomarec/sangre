@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import 'widgets.dart';
+
 class UsersList extends StatefulWidget {
   const UsersList({Key? key}) : super(key: key);
 
@@ -11,31 +13,34 @@ class UsersList extends StatefulWidget {
   State<UsersList> createState() => _UsersListState();
 }
 
+typedef UserType = Map<String, dynamic>;
+
 class _UsersListState extends State<UsersList> {
-  late Stream<List> usersStream;
+  late Stream<Map<String, dynamic>> usersStream;
 
   @override
   void initState() {
     super.initState();
-    final channel = WebSocketChannel.connect(Uri.parse(
+    usersStream = WebSocketChannel.connect(Uri.parse(
       'ws://localhost:3000/ws/users',
-    ));
-    usersStream = channel.stream.cast<String>().map(json.decode).cast<List>();
+    ))
+        .stream
+        .cast<String>()
+        .map(json.decode)
+        .map((e) => (e as List).cast<UserType>())
+        .map((e) => {
+              'users': e,
+              'date': DateTime.now(),
+            });
   }
 
   @override
   Widget build(BuildContext context) => StreamBuilder(
         stream: usersStream,
-        builder: (context, snapshot) => Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: (snapshot.data as List? ?? [])
-              .map((user) => Row(children: [
-                    Text(
-                      '[${user['users']['id']}] ${user['users']['name']}',
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                  ]))
-              .toList(),
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) =>
+            UsersWidget(
+          users: snapshot.data?['users'] as List<UserType>? ?? [],
+          date: snapshot.data?['date'],
         ),
       );
 }

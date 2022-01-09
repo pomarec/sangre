@@ -1,3 +1,4 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
@@ -10,14 +11,13 @@ void main() {
   runApp(
     MaterialApp(
       title: 'Sangre over websocket example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: FlexThemeData.light(scheme: FlexScheme.redWine),
+      darkTheme: FlexThemeData.dark(scheme: FlexScheme.redWine),
       home: Scaffold(
         appBar: AppBar(
           title: Text('Sangre over websocket example'),
         ),
-        body: Center(
+        body: SingleChildScrollView(
           child: showDiffed ? UsersDiffedList() : UsersList(),
         ),
         floatingActionButton: FloatingActionButton(
