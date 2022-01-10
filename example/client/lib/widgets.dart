@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 const _radius = 4.0;
 
+const lightRed = Color(0x4D9B1B30);
+
 class InfoBoxWidget extends StatelessWidget {
   final String? title;
   final Widget child;
@@ -43,7 +45,7 @@ class InfoBoxWidget extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
               decoration: BoxDecoration(
-                color: Color(0x4D9B1B30),
+                color: lightRed,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(_radius),
                   topRight: Radius.circular(_radius),

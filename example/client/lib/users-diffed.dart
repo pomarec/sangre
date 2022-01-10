@@ -19,6 +19,7 @@ class UsersDiffedList extends StatefulWidget {
 
 class _UsersDiffedListState extends State<UsersDiffedList> {
   final usersDiffedStream = BehaviorSubject<Map<String, dynamic>>();
+  late final usersDiffedStreamAccumulated = usersDiffedStream.accumulate();
   StreamSubscription? _websocketSubscription;
 
   bool get isConnected => _websocketSubscription != null;
@@ -31,11 +32,21 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
 
   _connect() {
     _websocketSubscription = _buildUsersStream().listen(usersDiffedStream.add);
+    usersDiffedStream.add(Map.from(usersDiffedStream.valueOrNull ?? {})
+      ..addAll({
+        'connection': true,
+        'date': DateTime.now(),
+      }));
   }
 
   _disconnect() {
     _websocketSubscription?.cancel();
     _websocketSubscription = null;
+    usersDiffedStream.add(Map.from(usersDiffedStream.valueOrNull ?? {})
+      ..addAll({
+        'disconnection': true,
+        'date': DateTime.now(),
+      }));
   }
 
   Stream<Map<String, dynamic>> _buildUsersStream() =>
@@ -68,11 +79,11 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Sangre over websocket example'),
+          title: Text('Sangre diffs over websocket example'),
         ),
         body: SingleChildScrollView(
           child: StreamBuilder(
-            stream: usersDiffedStream.accumulate(),
+            stream: usersDiffedStreamAccumulated,
             builder: (
               context,
               AsyncSnapshot snapshot,
@@ -82,23 +93,18 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
               children: (snapshot.data as List<Map<String, dynamic>>? ??
                       <Map<String, dynamic>>[])
                   .map(
-                    (Map<String, dynamic> e) => [
-                      if (e['diffs'] != null) ...[
-                        if (e['lastRevision'] != 0) Chip(label: Text("+")),
-                        InfoBoxWidget(
-                          title: "Diff",
-                          child: Text(e['diffs'].toString()),
-                          footer:
-                              "revision ${e['lastRevision']} => ${e['revision']}",
-                        ),
-                        Chip(label: Text("=")),
-                      ],
-                      UsersWidget(
-                        revision: e['revision'],
-                        users: e['users'] as List<Map>,
-                        date: DateTime.now(),
-                      ),
-                    ],
+                    (e) => e['connection'] != null
+                        ? [_buildSeparator(context, true, e['date'])]
+                        : e['disconnection'] != null
+                            ? [_buildSeparator(context, false, e['date'])]
+                            : [
+                                if (e['diffs'] != null) ..._buildDiffs(e),
+                                UsersWidget(
+                                  revision: e['revision'],
+                                  users: e['users'] as List<Map>,
+                                  date: DateTime.now(),
+                                ),
+                              ],
                   )
                   .expand((e) => e)
                   .toList(),
@@ -125,5 +131,54 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
             child: Icon(Icons.add),
           ),
         ],
+      );
+
+  List<Widget> _buildDiffs(Map<String, dynamic> e) => [
+        if (e['lastRevision'] != 0) Chip(label: Text("+")),
+        InfoBoxWidget(
+          title: "Diff",
+          child: Text(e['diffs'].toString()),
+          footer: "revision ${e['lastRevision']} => ${e['revision']}",
+        ),
+        Chip(label: Text("=")),
+      ];
+
+  Widget _buildSeparator(BuildContext context, bool connected, DateTime date) =>
+      Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Container(
+                height: 1,
+                color: lightRed,
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              child: Icon(
+                connected ? Icons.cloud_done : Icons.cloud_off,
+                color: lightRed,
+              ),
+            ),
+            Expanded(
+                child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: 10),
+                    height: 1,
+                    color: lightRed,
+                  ),
+                ),
+                Text(
+                  date.toString(),
+                  style: TextStyle(color: lightRed),
+                ),
+              ],
+            )),
+          ],
+        ),
       );
 }
