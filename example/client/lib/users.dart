@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'widgets.dart';
@@ -35,12 +36,26 @@ class _UsersListState extends State<UsersList> {
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder(
-        stream: usersStream,
-        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) =>
-            UsersWidget(
-          users: snapshot.data?['users'] as List<UserType>? ?? [],
-          date: snapshot.data?['date'],
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: Text('Sangre over websocket example'),
+        ),
+        body: SingleChildScrollView(
+          child: StreamBuilder(
+            stream: usersStream,
+            builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) =>
+                UsersWidget(
+              users: snapshot.data?['users'] as List<UserType>? ?? [],
+              date: snapshot.data?['date'],
+            ),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => get(Uri.parse(
+            "http://localhost:3000/addUser",
+          )),
+          tooltip: 'Add user',
+          child: Icon(Icons.add),
         ),
       );
 }

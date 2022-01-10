@@ -1,6 +1,8 @@
 import 'package:alfred/alfred.dart';
 import 'package:sangre/sangre.dart';
 
+import '../test/utils.dart';
+
 void main() async {
   var postgresClient = PostgreSQLConnection(
     "localhost",
@@ -43,7 +45,7 @@ void main() async {
         final name = req.uri.queryParameters['name'];
         await postgresClient.execute("""
         INSERT INTO "users" ("id", "name") VALUES
-        (${usersDBSource.stream.value.length},	'${name ?? "nobody"}');
+        (${usersDBSource.stream.value.length},	'${name ?? randomString()}');
       """);
       },
     );
