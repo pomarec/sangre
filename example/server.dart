@@ -1,8 +1,6 @@
 import 'package:alfred/alfred.dart';
 import 'package:sangre/sangre.dart';
 
-import '../test/utils.dart';
-
 void main() async {
   var postgresClient = PostgreSQLConnection(
     "localhost",

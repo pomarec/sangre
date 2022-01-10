@@ -46,7 +46,7 @@ class Diffed<T> extends Node1Input<T, DiffedDataWithRevision> {
       final previousRevisionResults = await postgresClient.mappedResultsQuery(
         """
           SELECT ("snapshot") FROM "$tableName" 
-          WHERE id='$id' AND revision='$previousRevision';
+          WHERE id='$nodeId' AND revision='$previousRevision';
         """,
       );
       final snapshot = previousRevisionResults[0][tableName]?["snapshot"];
@@ -73,6 +73,6 @@ class Diffed<T> extends Node1Input<T, DiffedDataWithRevision> {
 
   _saveCurrentRevision() async => postgresClient.execute("""
     INSERT INTO "$tableName" ("id", "revision", "snapshot") VALUES
-    ('$id',	$revision, '${json.encode(lastValue)}');
+    ('$nodeId',	$revision, '${json.encode(lastValue)}');
   """);
 }

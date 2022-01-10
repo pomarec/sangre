@@ -5,8 +5,6 @@ import 'package:dartz/dartz.dart';
 import 'package:sangre/sangre.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
-
 void main() {
   test('Growling list source', () async {
     final gls = await GrowingListSource(3);

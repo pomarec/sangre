@@ -5,6 +5,7 @@ class ListSource<Row> extends Node<List<Row>> {
 
   @override
   Future<void> init() async {
+    await super.init();
     streamController.add(_state);
   }
 

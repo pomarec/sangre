@@ -32,16 +32,3 @@ extension Sangre on Alfred {
     );
   }
 }
-
-extension FoldStream<T> on Stream<T> {
-  Stream<S> foldStream<S>(
-    S initialValue,
-    S Function(S previous, T element) combine,
-  ) {
-    S lastValue = initialValue;
-    return map((T e) {
-      lastValue = combine(lastValue, e);
-      return lastValue;
-    });
-  }
-}

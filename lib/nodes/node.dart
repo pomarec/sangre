@@ -4,17 +4,24 @@ import 'package:dartz/dartz.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../async_init.dart';
+import '../utils.dart';
 
 export '../async_init.dart';
 
 /// Any node, especially sources, have to seed their stream with
 /// at least one value before the end of init().
 abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
+  /// This should be set at initialization once and never touched then
+  String nodeId = "Uninitialized";
+
   final BehaviorSubject<Output> streamController = BehaviorSubject();
   ValueStream<Output> get stream => streamController.stream;
 
-  String get id =>
-      "nodeid"; // TODO : implement mechanism for each node to "compute" a unique id
+  @override
+  Future<void> init() async {
+    await super.init();
+    nodeId = typeName;
+  }
 
   Future close() => streamController.close();
 }
@@ -26,6 +33,7 @@ abstract class Node1Input<I1, Output> extends Node<Output> {
 
   @override
   Future<void> init() async {
+    nodeId = "$typeName[${this.nodeI1.nodeId}]";
     nodeI1.stream.asyncMap(process).pipe(streamController);
   }
 
@@ -40,6 +48,7 @@ abstract class Node2Input<I1, I2, Output> extends Node<Output> {
 
   @override
   Future<void> init() async {
+    nodeId = "$typeName[${this.nodeI1.nodeId}, ${this.nodeI2.nodeId}]";
     Rx.combineLatest2(
       nodeI1.stream,
       nodeI2.stream,
@@ -65,6 +74,8 @@ abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
 
   @override
   Future<void> init() async {
+    nodeId =
+        "$typeName[${this.nodeI1.nodeId}, ${this.nodeI2.nodeId}, ${this.nodeI3.nodeId}]";
     Rx.combineLatest3(
       nodeI1.stream,
       nodeI2.stream,

@@ -11,7 +11,6 @@ import 'package:test/test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../env.dart';
-import '../utils.dart';
 
 void main() async {
   HttpServer? server;

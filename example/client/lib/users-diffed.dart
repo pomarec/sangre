@@ -7,6 +7,7 @@ import 'package:json_patch/json_patch.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import 'utils.dart';
 import 'widgets.dart';
 
 class UsersDiffedList extends StatefulWidget {
@@ -125,25 +126,4 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
           ),
         ],
       );
-}
-
-extension FoldStream<T> on Stream<T> {
-  Stream<S> foldStream<S>(
-    S initialValue,
-    S Function(S previous, T element) combine,
-  ) {
-    S lastValue = initialValue;
-    return map((T e) {
-      lastValue = combine(lastValue, e);
-      return lastValue;
-    });
-  }
-
-  Stream<List<T>> accumulate() {
-    final lastValue = List<T>.empty(growable: true);
-    return map((T e) {
-      lastValue.add(e);
-      return List.from(lastValue);
-    });
-  }
 }

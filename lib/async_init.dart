@@ -53,6 +53,7 @@ mixin AsyncInitMixin<T extends Future> implements Future {
   Future init() async {}
 }
 
+// ignore: unused_element
 class _Example with AsyncInitMixin {
   String? data;
 
