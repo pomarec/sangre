@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:postgres/postgres.dart';
 import 'package:realtime_client/realtime_client.dart';
@@ -112,12 +113,21 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
     _realtimeChannel?.unsubscribe();
   }
 
-  Future<JoinManyToMany> joinMany(String joinKey) async =>
-      // TODO : change last this to be generic
+  Future<JoinManyToMany> joinMany(
+    String joinKey, [
+    String? joinedTableName,
+  ]) async =>
       await JoinManyToMany(
         await this,
         joinKey,
         await PostgresTableSource("${tableName}_$joinKey"),
-        await this,
+        _tableNameToId(tableName),
+        _tableNameToId(joinKey),
+        joinedTableName != null
+            ? PostgresTableSource(joinedTableName)
+            : await this,
       );
+
+  static String _tableNameToId(String tableName) =>
+      "${tableName.substring(0, max(tableName.length - 1, 0))}_id";
 }
