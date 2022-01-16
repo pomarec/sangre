@@ -40,17 +40,13 @@ void main() async {
 
   test('Postgres table retriving', () async {
     final source =
-        await PostgresTableSource(postgresClient, 'users', realtimeClient);
+        await PostgresTableSource('users', postgresClient, realtimeClient);
     expect(
       source.stream,
       emitsInOrder([
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          }
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'}
         ],
       ]),
     );
@@ -58,7 +54,7 @@ void main() async {
 
   test('Postgres table inserting', () async {
     final source =
-        await PostgresTableSource(postgresClient, 'users', realtimeClient);
+        await PostgresTableSource('users', postgresClient, realtimeClient);
 
     await postgresClient.execute("""
       INSERT INTO "users" ("id", "name") VALUES
@@ -68,30 +64,20 @@ void main() async {
       source.stream,
       emitsInOrder([
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'}
         ],
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
-          {
-            'users': {'id': 2, 'name': 'patafouin'}
-          }
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'},
+          {'id': 2, 'name': 'patafouin'}
         ],
       ]),
     );
   });
 
   test('Postgres table inserting (Polling)', () async {
-    final source = await PostgresTableSource(postgresClient, 'users');
+    final source = await PostgresTableSource('users', postgresClient);
 
     await postgresClient.execute("""
       INSERT INTO "users" ("id", "name") VALUES
@@ -101,23 +87,13 @@ void main() async {
       source.stream,
       emitsInOrder([
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'}
         ],
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
-          {
-            'users': {'id': 2, 'name': 'patafouin'}
-          }
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'},
+          {'id': 2, 'name': 'patafouin'},
         ],
       ]),
     );
@@ -125,7 +101,7 @@ void main() async {
 
   test('Postgres table updating', () async {
     final source =
-        await PostgresTableSource(postgresClient, 'users', realtimeClient);
+        await PostgresTableSource('users', postgresClient, realtimeClient);
 
     await postgresClient.execute("""
       UPDATE "users"
@@ -136,20 +112,12 @@ void main() async {
       source.stream,
       emitsInOrder([
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'}
         ],
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omarys'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omarys'},
         ],
       ]),
     );
@@ -157,7 +125,7 @@ void main() async {
 
   test('Postgres table updating id', () async {
     final source =
-        await PostgresTableSource(postgresClient, 'users', realtimeClient);
+        await PostgresTableSource('users', postgresClient, realtimeClient);
 
     await postgresClient.execute("""
       UPDATE "users"
@@ -168,20 +136,12 @@ void main() async {
       source.stream,
       emitsInOrder([
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'}
         ],
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 3, 'name': 'omarys'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 3, 'name': 'omarys'},
         ],
       ]),
     );
@@ -189,7 +149,7 @@ void main() async {
 
   test('Postgres table deleting', () async {
     final source =
-        await PostgresTableSource(postgresClient, 'users', realtimeClient);
+        await PostgresTableSource('users', postgresClient, realtimeClient);
 
     await postgresClient.execute("""
       DELETE FROM "users"
@@ -199,17 +159,11 @@ void main() async {
       source.stream,
       emitsInOrder([
         [
-          {
-            'users': {'id': 0, 'name': 'fred'}
-          },
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
+          {'id': 0, 'name': 'fred'},
+          {'id': 1, 'name': 'omar'}
         ],
         [
-          {
-            'users': {'id': 1, 'name': 'omar'}
-          },
+          {'id': 1, 'name': 'omar'},
         ],
       ]),
     );
@@ -237,16 +191,16 @@ void main() async {
 
     // Setup nodes
     final usersDBSource =
-        await PostgresTableSource(postgresClient, 'users', realtimeClient);
+        await PostgresTableSource('users', postgresClient, realtimeClient);
     final usersWithParent = await JoinOneToOne(
       usersDBSource,
-      (e) => e['users']['parent_id'],
+      (e) => e['parent_id'],
       usersDBSource,
-      (e) => e['users']['id'],
+      (e) => e['id'],
       (e, v) => e['parent'] = v,
     );
     final usersWithChildrenCount = await NodeOperator1Input(
-      (a) async => a, // TODO addd count
+      (a) async => a, // a['parent_count'] = a['parents'].length,
       usersWithParent,
     );
 
@@ -256,34 +210,31 @@ void main() async {
       emitsInOrder([
         [
           {
-            'users': {'id': 0, 'name': "fred", 'parent_id': 1},
-            'parent': {
-              'users': {'id': 1, 'name': "omar", 'parent_id': 0}
-            }
+            'id': 0,
+            'name': "fred",
+            'parent_id': 1,
+            'parent': {'id': 1, 'name': "omar", 'parent_id': 0}
           },
           {
-            'users': {'id': 1, 'name': "omar", 'parent_id': 0},
-            'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent_id': 1}
-            }
+            'id': 1,
+            'name': "omar",
+            'parent_id': 0,
+            'parent': {'id': 0, 'name': "fred", 'parent_id': 1},
           },
           {
-            'users': {'id': 2, 'name': "pataf", 'parent_id': 0},
-            'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent_id': 1}
-            }
+            'id': 2,
+            'name': "pataf",
+            'parent_id': 0,
+            'parent': {'id': 0, 'name': "fred", 'parent_id': 1},
           },
           {
-            'users': {'id': 3, 'name': "skavinski", 'parent_id': 0},
-            'parent': {
-              'users': {'id': 0, 'name': "fred", 'parent_id': 1}
-            }
+            'id': 3,
+            'name': "skavinski",
+            'parent_id': 0,
+            'parent': {'id': 0, 'name': "fred", 'parent_id': 1}
           }
         ]
       ]),
     );
   });
 }
-
-//   => DB('users').to(Filter(group)).to(Join('places')).to(FetchPlaceDetail());
-

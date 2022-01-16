@@ -134,10 +134,11 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
       );
 
   List<Widget> _buildDiffs(Map<String, dynamic> e) => [
+        // TODO: mettre en forme le diff
         if (e['lastRevision'] != 0) Chip(label: Text("+")),
         InfoBoxWidget(
           title: "Diff",
-          child: Text(e['diffs'].toString()),
+          child: Text(e['diffs'].toString()), // TODO : format
           footer: "revision ${e['lastRevision']} => ${e['revision']}",
         ),
         Chip(label: Text("=")),
@@ -173,7 +174,7 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
                   ),
                 ),
                 Text(
-                  date.toString(),
+                  date.toString(), // TODO : format
                   style: TextStyle(color: lightRed),
                 ),
               ],

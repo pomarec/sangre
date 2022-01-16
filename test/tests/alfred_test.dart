@@ -48,10 +48,10 @@ void main() async {
           [
             ..._usersBeforeAdd,
             {
-              'users': {'id': 4, 'name': newUserName, 'parent_id': 1},
-              'parent': {
-                'users': {'id': 1, 'name': 'omar', 'parent_id': 0}
-              }
+              'id': 4,
+              'name': newUserName,
+              'parent_id': 1,
+              'parent': {'id': 1, 'name': 'omar', 'parent_id': 0}
             }
           ]
         ]),
@@ -101,10 +101,10 @@ void main() async {
           [
             ..._usersBeforeAdd,
             {
-              'users': {'id': 4, 'name': newUserName, 'parent_id': 1},
-              'parent': {
-                'users': {'id': 1, 'name': 'omar', 'parent_id': 0}
-              }
+              'id': 4,
+              'name': newUserName,
+              'parent_id': 1,
+              'parent': {'id': 1, 'name': 'omar', 'parent_id': 0}
             }
           ]
         ]),
@@ -133,10 +133,10 @@ void main() async {
           [
             ..._usersBeforeAdd,
             {
-              'users': {'id': 4, 'name': newUserName, 'parent_id': 1},
-              'parent': {
-                'users': {'id': 1, 'name': 'omar', 'parent_id': 0}
-              }
+              'id': 4,
+              'name': newUserName,
+              'parent_id': 1,
+              'parent': {'id': 1, 'name': 'omar', 'parent_id': 0}
             }
           ]
         ]),
@@ -184,12 +184,12 @@ Future<HttpServer> setupServer() async {
 
   // Setup nodes
   final usersDBSource =
-      await PostgresTableSource(postgresClient, 'users', realtimeClient);
+      await PostgresTableSource('users', postgresClient, realtimeClient);
   final usersWithParent = await JoinOneToOne(
     usersDBSource,
-    (e) => e['users']['parent_id'],
+    (e) => e['parent_id'],
     usersDBSource,
-    (e) => e['users']['id'],
+    (e) => e['id'],
     (e, v) => e['parent'] = v,
   );
 
@@ -210,27 +210,27 @@ Future<HttpServer> setupServer() async {
 
 final _usersBeforeAdd = [
   {
-    "users": {"id": 0, "name": "fred", "parent_id": 1},
-    "parent": {
-      "users": {"id": 1, "name": "omar", "parent_id": 0}
-    }
+    "id": 0,
+    "name": "fred",
+    "parent_id": 1,
+    "parent": {"id": 1, "name": "omar", "parent_id": 0}
   },
   {
-    "users": {"id": 1, "name": "omar", "parent_id": 0},
-    "parent": {
-      "users": {"id": 0, "name": "fred", "parent_id": 1}
-    }
+    "id": 1,
+    "name": "omar",
+    "parent_id": 0,
+    "parent": {"id": 0, "name": "fred", "parent_id": 1}
   },
   {
-    "users": {"id": 2, "name": "pataf", "parent_id": 0},
-    "parent": {
-      "users": {"id": 0, "name": "fred", "parent_id": 1}
-    }
+    "id": 2,
+    "name": "pataf",
+    "parent_id": 0,
+    "parent": {"id": 0, "name": "fred", "parent_id": 1}
   },
   {
-    "users": {"id": 3, "name": "skavinski", "parent_id": 0},
-    "parent": {
-      "users": {"id": 0, "name": "fred", "parent_id": 1}
-    }
+    "id": 3,
+    "name": "skavinski",
+    "parent_id": 0,
+    "parent": {"id": 0, "name": "fred", "parent_id": 1}
   }
 ];

@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:postgres/postgres.dart';
 import 'package:realtime_client/realtime_client.dart';
+import 'package:sangre/nodes/operators/join_many_to_many.dart';
 
 import 'list_source.dart';
 
-typedef PostgresRowMap = Map<String, Map<String, dynamic>>;
+typedef PostgresRowMap = Map<String, dynamic>;
 
 class PostgresTableSource extends ListSource<PostgresRowMap> {
+  static PostgreSQLConnection? globalPostgresClient;
+  static RealtimeClient? globalRealtimeClient;
+
   final PostgreSQLConnection postgresClient;
   final RealtimeClient? realtimeClient;
   final String tableName;
@@ -16,10 +20,11 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
   RealtimeSubscription? _realtimeChannel;
 
   PostgresTableSource(
-    this.postgresClient,
     this.tableName, [
-    this.realtimeClient,
-  ]);
+    PostgreSQLConnection? postgresClient,
+    RealtimeClient? realtimeClient,
+  ])  : postgresClient = globalPostgresClient ?? postgresClient!,
+        realtimeClient = globalRealtimeClient ?? realtimeClient;
 
   @override
   Future<void> init() async {
@@ -33,9 +38,12 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
   }
 
   Future<List<PostgresRowMap>> _fetchResults() async =>
-      postgresClient.mappedResultsQuery(
+      (await postgresClient.mappedResultsQuery(
         "SELECT * FROM $tableName",
-      );
+      ))
+          .map((e) => e[tableName])
+          .cast<PostgresRowMap>()
+          .toList();
 
   setupPolling() async {
     _queryStreamController = StreamController();
@@ -53,48 +61,38 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
       _realtimeChannel = channel;
       channel.on(
         'INSERT',
-        (payload, {ref}) => insertRow({
-          tableName: convertChangeData(
+        (payload, {ref}) => insertRow(
+          convertChangeData(
             (payload['columns'] as List).cast<Map<String, dynamic>>(),
             payload['record'],
           ),
-        }),
+        ),
       );
       channel.on(
         'UPDATE',
         (payload, {ref}) {
-          final typedOldRow = {
-            tableName: convertChangeData(
-              (payload['columns'] as List).cast<Map<String, dynamic>>(),
-              payload['old_record'],
-            )
-          };
-          final typedNewRow = {
-            tableName: convertChangeData(
-              (payload['columns'] as List).cast<Map<String, dynamic>>(),
-              payload['record'],
-            )
-          };
+          final typedOldRow = convertChangeData(
+            (payload['columns'] as List).cast<Map<String, dynamic>>(),
+            payload['old_record'],
+          );
+          final typedNewRow = convertChangeData(
+            (payload['columns'] as List).cast<Map<String, dynamic>>(),
+            payload['record'],
+          );
           updateRows(
-            (row) => row[tableName]!['id'] == typedOldRow[tableName]!['id']
-                ? typedNewRow
-                : row,
+            (row) => row['id'] == typedOldRow['id'] ? typedNewRow : row,
           );
         },
       );
       channel.on(
         'DELETE',
         (payload, {ref}) {
-          final typedRow = {
-            tableName: convertChangeData(
-              (payload['columns'] as List).cast<Map<String, dynamic>>(),
-              payload['old_record'],
-            )
-          };
+          final typedRow = convertChangeData(
+            (payload['columns'] as List).cast<Map<String, dynamic>>(),
+            payload['old_record'],
+          );
           updateRows(
-            (row) => row[tableName]!['id'] == typedRow[tableName]!['id']
-                ? null
-                : row,
+            (row) => row['id'] == typedRow['id'] ? null : row,
           );
         },
       );
@@ -103,7 +101,7 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
       // Wait for channel to be joined
       int maxRetries = 5;
       while (!channel.isJoined() && maxRetries-- > 0)
-        await Future.delayed(Duration(milliseconds: 200));
+        await Future.delayed(Duration(milliseconds: 50));
     }
   }
 
@@ -113,4 +111,13 @@ class PostgresTableSource extends ListSource<PostgresRowMap> {
     await _queryStreamController?.close();
     _realtimeChannel?.unsubscribe();
   }
+
+  Future<JoinManyToMany> joinMany(String joinKey) async =>
+      // TODO : change last this to be generic
+      await JoinManyToMany(
+        await this,
+        joinKey,
+        await PostgresTableSource("${tableName}_$joinKey"),
+        await this,
+      );
 }

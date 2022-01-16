@@ -89,7 +89,7 @@ class UsersWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InfoBoxWidget(
         title: revision != null ? 'Users [rev: ${revision}]' : 'Users',
-        footer: date?.toString(),
+        footer: date?.toString(), // TODO : format
         child: Column(
           children: users
               .map(
@@ -100,7 +100,7 @@ class UsersWidget extends StatelessWidget {
                       Container(
                         width: 23,
                         child: Text(
-                          user['users']['id'].toString(),
+                          user['id'].toString(),
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onBackground,
                           ),
@@ -113,7 +113,7 @@ class UsersWidget extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onBackground,
                       ),
                       Text(
-                        user['users']['name'],
+                        user['name'],
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
