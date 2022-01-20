@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../node.dart';
 
 /// A node operator is a node which process() is based on a operator
@@ -43,4 +45,32 @@ class NodeOperator3Input<I1, I2, I3, Output>
   @override
   Future<Output> process(I1 input1, I2 input2, I3 input3) async =>
       await op(input1, input2, input3);
+}
+
+class NodeOperator1InputInterval<I1, Output>
+    extends NodeOperator1Input<I1, Output> {
+  Timer? timer;
+  final Duration interval;
+
+  NodeOperator1InputInterval(Future<Output> Function(I1 p1) op, Node<I1> nodeI1,
+      [Duration? interval])
+      : interval = Duration(seconds: 5),
+        super(op, nodeI1);
+
+  @override
+  Future<void> init() async {
+    await super.init();
+    timer = Timer.periodic(
+      interval,
+      (_) async => streamController.add(
+        await process(nodeI1.stream.value),
+      ),
+    );
+  }
+
+  @override
+  Future close() async {
+    timer?.cancel();
+    await super.close();
+  }
 }

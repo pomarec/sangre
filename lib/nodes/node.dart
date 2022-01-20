@@ -34,7 +34,7 @@ abstract class Node1Input<I1, Output> extends Node<Output> {
   @override
   Future<void> init() async {
     nodeId = "$typeName[${this.nodeI1.nodeId}]";
-    nodeI1.stream.asyncMap(process).pipe(streamController);
+    (await nodeI1).stream.asyncMap(process).listen(streamController.add);
   }
 
   Future<Output> process(I1 input) async => throw UnimplementedError();
@@ -50,8 +50,8 @@ abstract class Node2Input<I1, I2, Output> extends Node<Output> {
   Future<void> init() async {
     nodeId = "$typeName[${this.nodeI1.nodeId}, ${this.nodeI2.nodeId}]";
     Rx.combineLatest2(
-      nodeI1.stream,
-      nodeI2.stream,
+      (await nodeI1).stream,
+      (await nodeI2).stream,
       (I1 a, I2 b) => Tuple2(a, b),
     )
         .asyncMap(
@@ -77,9 +77,9 @@ abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
     nodeId =
         "$typeName[${this.nodeI1.nodeId}, ${this.nodeI2.nodeId}, ${this.nodeI3.nodeId}]";
     Rx.combineLatest3(
-      nodeI1.stream,
-      nodeI2.stream,
-      nodeI3.stream,
+      (await nodeI1).stream,
+      (await nodeI2).stream,
+      (await nodeI3).stream,
       (I1 a, I2 b, I3 c) => Tuple3(a, b, c),
     )
         .asyncMap(

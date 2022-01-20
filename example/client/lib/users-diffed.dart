@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:json_patch/json_patch.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -134,12 +135,14 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
       );
 
   List<Widget> _buildDiffs(Map<String, dynamic> e) => [
-        // TODO: mettre en forme le diff
         if (e['lastRevision'] != 0) Chip(label: Text("+")),
-        InfoBoxWidget(
-          title: "Diff",
-          child: Text(e['diffs'].toString()), // TODO : format
-          footer: "revision ${e['lastRevision']} => ${e['revision']}",
+        Opacity(
+          opacity: 0.6,
+          child: InfoBoxWidget(
+            title: "Diff",
+            child: JSONWidget(json: e['diffs']),
+            footer: "revision ${e['lastRevision']} => ${e['revision']}",
+          ),
         ),
         Chip(label: Text("=")),
       ];
@@ -174,7 +177,7 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
                   ),
                 ),
                 Text(
-                  date.toString(), // TODO : format
+                  DateFormat().format(date),
                   style: TextStyle(color: lightRed),
                 ),
               ],

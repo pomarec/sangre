@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:math';
+
 import '../node.dart';
+import '../sources/postgres_table.dart';
 
 typedef _T = Map<String, dynamic>;
 
 class JoinManyToMany<O extends _T>
-    extends Node3Input<List<_T>, List<_T>, List<_T>, List<O>> {
+    extends Node3Input<List<_T>, List<_T>, List<_T>, List<O>> with Joinable<O> {
   final String joinKey;
   final String jtJoinKey;
   final String jtValueKey;
@@ -16,6 +20,8 @@ class JoinManyToMany<O extends _T>
     this.jtValueKey,
     Node<List<_T>> nodeI3,
   ) : super(nodeI1, nodeI2, nodeI3);
+
+  String get tableName => (nodeI1 as PostgresTableSource).tableName;
 
   @override
   Future<List<O>> process(
@@ -39,4 +45,42 @@ class JoinManyToMany<O extends _T>
         input1Element[joinKey] = joinedItems;
         return input1Element;
       }).toList();
+}
+
+mixin Joinable<T extends PostgresRowMap> on Node<List<T>> {
+  String get tableName;
+
+  Future<Joinable<T>> joinMany(
+    String joinKey, {
+    String? fromTableName,
+    Node<List<PostgresRowMap>>? fromTable,
+  }) async =>
+      await JoinManyToMany(
+        await this,
+        joinKey,
+        await PostgresTableSource("${tableName}_$joinKey"),
+        _tableNameToId(tableName),
+        _tableNameToId(joinKey),
+        fromTable != null
+            ? await fromTable
+            : fromTableName != null
+                ? await PostgresTableSource(fromTableName)
+                : await this,
+      ) as Joinable<T>;
+
+  static String _tableNameToId(String tableName) =>
+      "${tableName.substring(0, max(tableName.length - 1, 0))}_id";
+}
+
+extension JoinableFuture<T extends PostgresRowMap> on Future<Joinable<T>> {
+  Future<Joinable<T>> joinMany(
+    String joinKey, {
+    String? fromTableName,
+    Node<List<PostgresRowMap>>? fromTable,
+  }) async =>
+      await (await this).joinMany(
+        joinKey,
+        fromTableName: fromTableName,
+        fromTable: fromTable,
+      );
 }

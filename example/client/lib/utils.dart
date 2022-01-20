@@ -32,3 +32,7 @@ extension FoldStream<T> on Stream<T> {
     });
   }
 }
+
+extension ListSorted<T> on Iterable<T> {
+  List<T> sorted(int compare(T a, T b)) => [...this]..sort(compare);
+}
