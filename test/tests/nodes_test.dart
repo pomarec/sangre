@@ -28,7 +28,7 @@ void main() {
       chain.stream,
       emitsInOrder([1, 2, 3, emitsDone]),
     );
-  });
+  }, timeout: Timeout(Duration(seconds: 3)));
 
   test('Combine growing list source with an async operator', () async {
     final chain = await NodeOperator1Input(
@@ -87,6 +87,17 @@ void main() {
     expect(
       chain.stream,
       emitsInOrder([7, 8]),
+    );
+  });
+
+  test('Node chaining without await', () async {
+    final chain = await NodeOperator1Input(
+      (Iterable a) async => a.length,
+      GrowingListSource(3),
+    );
+    expect(
+      chain.stream,
+      emitsInOrder([1, 2, 3, emitsDone]),
     );
   });
 }

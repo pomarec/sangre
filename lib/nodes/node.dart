@@ -24,6 +24,14 @@ abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   }
 
   Future close() => streamController.close();
+
+  _inject(Stream<Output> stream) => stream
+      .listen(streamController.add)
+      // Close this when 'stream' closes
+      // Not using .pipe() allows streamController to receive other
+      // events simulteanously
+      .asFuture()
+      .then((_) => close());
 }
 
 abstract class Node1Input<I1, Output> extends Node<Output> {
@@ -34,7 +42,7 @@ abstract class Node1Input<I1, Output> extends Node<Output> {
   @override
   Future<void> init() async {
     nodeId = "$typeName[${this.nodeI1.nodeId}]";
-    (await nodeI1).stream.asyncMap(process).listen(streamController.add);
+    _inject(((await nodeI1) as Node<I1>).stream.asyncMap(process));
   }
 
   Future<Output> process(I1 input) async => throw UnimplementedError();
@@ -49,15 +57,13 @@ abstract class Node2Input<I1, I2, Output> extends Node<Output> {
   @override
   Future<void> init() async {
     nodeId = "$typeName[${this.nodeI1.nodeId}, ${this.nodeI2.nodeId}]";
-    Rx.combineLatest2(
+    _inject(Rx.combineLatest2(
       (await nodeI1).stream,
       (await nodeI2).stream,
       (I1 a, I2 b) => Tuple2(a, b),
-    )
-        .asyncMap(
-          (tuple) async => await process(tuple.value1, tuple.value2),
-        )
-        .pipe(streamController);
+    ).asyncMap(
+      (tuple) async => await process(tuple.value1, tuple.value2),
+    ));
     await streamController.first;
   }
 
@@ -76,17 +82,14 @@ abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
   Future<void> init() async {
     nodeId =
         "$typeName[${this.nodeI1.nodeId}, ${this.nodeI2.nodeId}, ${this.nodeI3.nodeId}]";
-    Rx.combineLatest3(
+    _inject(Rx.combineLatest3(
       (await nodeI1).stream,
       (await nodeI2).stream,
       (await nodeI3).stream,
       (I1 a, I2 b, I3 c) => Tuple3(a, b, c),
-    )
-        .asyncMap(
-          (tuple) async =>
-              await process(tuple.value1, tuple.value2, tuple.value3),
-        )
-        .pipe(streamController);
+    ).asyncMap(
+      (tuple) async => await process(tuple.value1, tuple.value2, tuple.value3),
+    ));
     await streamController.first;
   }
 

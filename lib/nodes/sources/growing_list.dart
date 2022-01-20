@@ -19,7 +19,7 @@ class GrowingListSource extends ListSource<int> {
 
     Future.delayed(
       Duration(milliseconds: (limit + 1) * 100),
-      streamController.close,
+      close,
     );
   }
 }
