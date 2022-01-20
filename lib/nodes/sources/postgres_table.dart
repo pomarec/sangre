@@ -6,6 +6,8 @@ import 'package:realtime_client/realtime_client.dart';
 import '../operators/join_many_to_many.dart';
 import 'list_source.dart';
 
+typedef DB = PostgresTableSource;
+
 typedef PostgresRowMap = Map<String, dynamic>;
 
 class PostgresTableSource extends ListSource<PostgresRowMap>

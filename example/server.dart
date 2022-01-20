@@ -3,17 +3,16 @@ import 'dart:math';
 import 'package:alfred/alfred.dart';
 import 'package:sangre/sangre.dart';
 
-typedef DB = PostgresTableSource;
-
 void main() async {
   final postgresClient = await setupDB();
 
   // Setup nodes
-  final a = DB('users')
-      .joinMany('places', fromTable: PlacesRaterNode(DB('places')))
+  final usersDBSource = await DB('users')
+      .joinMany(
+        'places',
+        fromTable: PlacesRaterNode(DB('places')),
+      )
       .joinMany('followeds');
-
-  final usersDBSource = await a;
 
   // Setup api server
   final app = Alfred()
