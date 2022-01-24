@@ -4,6 +4,7 @@ export 'package:realtime_client/realtime_client.dart';
 export 'alfred.dart';
 export 'nodes/node.dart';
 export 'nodes/operators/diffed.dart';
+export 'nodes/operators/get.dart';
 export 'nodes/operators/join_many_to_many.dart';
 export 'nodes/operators/join_one_to_one.dart';
 export 'nodes/operators/logger.dart';

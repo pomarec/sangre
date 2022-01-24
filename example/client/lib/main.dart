@@ -9,7 +9,7 @@ final showDiffed = true;
 void main() {
   runApp(
     MaterialApp(
-      title: 'Sangre over websocket example',
+      title: 'Sangre realtime example : my friends have bookmarked places',
       theme: FlexThemeData.light(scheme: FlexScheme.redWine),
       darkTheme: FlexThemeData.dark(scheme: FlexScheme.redWine),
       home: showDiffed ? UsersDiffedList() : UsersList(),

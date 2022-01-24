@@ -7,23 +7,24 @@ void main() async {
   final postgresClient = await setupDB();
 
   // Setup nodes
-  final usersDBSource = await DB('users')
-      .joinMany(
-        'places',
-        fromTable: PlacesRaterNode(DB('places')),
-      )
-      .joinMany('followeds');
+  final followedSource = await DB('users').get('id', 1).joinMany(
+        'followeds',
+        fromTable: DB('users').joinMany(
+          'places',
+          fromTable: PlacesOccupationFetcherNode(DB('places')),
+        ),
+      );
 
   // Setup api server
   final app = Alfred()
-    ..sangre('/users', usersDBSource)
+    ..sangre('/followeds', followedSource)
     ..get(
-      '/addUser',
+      '/unfollow',
       (req, res) async {
         final name = req.uri.queryParameters['name'];
         await postgresClient.execute("""
           INSERT INTO "users" ("id", "name") VALUES
-          (${usersDBSource.stream.value.length},	'${name ?? randomString()}');
+          (${followedSource.stream.value.length},	'${name ?? randomString()}');
         """);
       },
     );
@@ -54,9 +55,10 @@ Future<PostgreSQLConnection> setupDB() async {
       ) WITH (oids = false);
       ALTER TABLE "users" REPLICA IDENTITY FULL;
       INSERT INTO "users" ("id", "name") VALUES
-      (0,	'fred'),
-      (1,	'omar'),
-      (2,	'pataf');
+      (0,	'Fred'),
+      (1,	'Omar'),
+      (2,	'Jean'),
+      (4,	'Roland');
 
       DROP TABLE IF EXISTS "users_followeds";
       CREATE TABLE "users_followeds" (
@@ -68,8 +70,8 @@ Future<PostgreSQLConnection> setupDB() async {
       (0,	1),
       (1,	2),
       (1,	0),
+      (1,	1),
       (2, 1);
-
 
       DROP TABLE IF EXISTS "places";
       CREATE TABLE "places" (
@@ -78,10 +80,10 @@ Future<PostgreSQLConnection> setupDB() async {
       ) WITH (oids = false);
       ALTER TABLE "places" REPLICA IDENTITY FULL;
       INSERT INTO "places" ("id", "name") VALUES
-      (0,	'Rakwe'),
+      (0,	'Looloo Kitchen'),
       (1,	'La Cuisinerie'),
-      (2,	'Solemior'),
-      (3,	'Les douceurs de lorient'),
+      (2,	'Cosinar Juntos'),
+      (3,	'Pachamama'),
       (4,	'Philoo'),
       (5,	'Duropam');
 
@@ -96,21 +98,29 @@ Future<PostgreSQLConnection> setupDB() async {
       (1,	2),
       (1,	3),
       (2, 4),
-      (0, 5);
+      (0, 5),
+      (4, 5),
+      (1, 5);
     """;
   await postgresClient.execute(sql);
   return postgresClient;
 }
 
-class PlacesRaterNode extends NodeOperator1InputInterval<List<PostgresRowMap>,
-    List<PostgresRowMap>> {
-  PlacesRaterNode(Node<List<PostgresRowMap>> nodeI1)
+class PlacesOccupationFetcherNode extends NodeOperator1InputInterval<
+    List<PostgresRowMap>, List<PostgresRowMap>> {
+  PlacesOccupationFetcherNode(Node<List<PostgresRowMap>> nodeI1)
       : super(
           (places) async {
+            // Here, places occupation is randomly set but we could
+            // have retrieved this info from an external API since
+            // we are in an async function
+
             final resp = List<PostgresRowMap>.from(places);
-            final randomIndex = Random().nextInt(resp.length);
-            resp[randomIndex] = Map.from(resp[randomIndex])
-              ..['rating'] = Random().nextInt(5);
+            for (var i = 0; i < min(3, resp.length); i++) {
+              final randomIndex = Random().nextInt(resp.length);
+              resp[randomIndex] = Map.from(resp[randomIndex])
+                ..['occupation'] = Random().nextInt(5);
+            }
             return resp;
           },
           nodeI1,

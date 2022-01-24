@@ -52,7 +52,7 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
 
   Stream<Map<String, dynamic>> _buildUsersStream() =>
       WebSocketChannel.connect(Uri.parse(
-        'ws://127.0.0.1:3000/ws/users-diffed?from=${usersDiffedStream.valueOrNull?['revision'] ?? 0}',
+        'ws://127.0.0.1:3000/ws/followeds-diffed?from=${usersDiffedStream.valueOrNull?['revision'] ?? 0}',
       ))
           .stream
           .cast<String>()
@@ -60,19 +60,18 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
           .foldStream<Map<String, dynamic>>(
             usersDiffedStream.valueOrNull ??
                 {
-                  'users': <Map>[],
+                  'data': Map<String, dynamic>(),
                   'revision': 0,
                 },
             (previous, diffs) => {
               'lastRevision': previous['revision'],
               'revision': diffs['revision'],
               'diffs': diffs['diffs'],
-              'users': (JsonPatch.apply(
-                previous['users'],
+              'data': JsonPatch.apply(
+                previous['data'],
                 (diffs['diffs'] as List).cast<Map<String, dynamic>>(),
                 strict: false,
-              ) as List)
-                  .cast<Map<String, dynamic>>(),
+              ),
               'date': DateTime.now(),
             },
           );
@@ -101,8 +100,9 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
                             : [
                                 if (e['diffs'] != null) ..._buildDiffs(e),
                                 UsersWidget(
+                                  title: 'Friends',
                                   revision: e['revision'],
-                                  users: e['users'] as List<Map>,
+                                  users: e['data']['followeds'],
                                   date: DateTime.now(),
                                 ),
                               ],
@@ -140,7 +140,14 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
           opacity: 0.6,
           child: InfoBoxWidget(
             title: "Diff",
-            child: JSONWidget(json: e['diffs']),
+            child: Container(
+              constraints: BoxConstraints(maxHeight: 200),
+              child: SingleChildScrollView(
+                child: Text(
+                  JsonEncoder.withIndent('  ').convert(e['diffs']),
+                ),
+              ),
+            ),
             footer: "revision ${e['lastRevision']} => ${e['revision']}",
           ),
         ),

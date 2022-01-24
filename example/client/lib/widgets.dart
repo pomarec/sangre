@@ -46,6 +46,7 @@ class InfoBoxWidget extends StatelessWidget {
                 ],
               ),
             Container(
+              width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
               decoration: BoxDecoration(
                 color: lightRed,
@@ -78,12 +79,14 @@ class InfoBoxWidget extends StatelessWidget {
 }
 
 class UsersWidget extends StatelessWidget {
-  final List<Map> users;
+  final String? title;
+  final List users;
   final DateTime? date;
   final int? revision;
 
   const UsersWidget({
     Key? key,
+    this.title,
     required this.users,
     this.date,
     this.revision,
@@ -91,43 +94,64 @@ class UsersWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => InfoBoxWidget(
-        title: revision != null ? 'Users [rev: ${revision}]' : 'Users',
+        title:
+            (title ?? "") + (revision != null ? ' : [rev: ${revision}]' : ' :'),
         footer: date != null ? DateFormat().format(date!) : null,
-        child: JSONWidget(json: users),
-        // Column(
-        //   children: users
-        //       .map(
-        //         (user) => Container(
-        //           padding: EdgeInsets.symmetric(vertical: 3),
-        //           child: Row(
-        //             children: [
-        //               Container(
-        //                 width: 23,
-        //                 child: Text(
-        //                   user['id'].toString(),
-        //                   style: TextStyle(
-        //                     color: Theme.of(context).colorScheme.onBackground,
-        //                   ),
-        //                 ),
-        //               ),
-        //               Container(
-        //                 height: 12,
-        //                 width: 1,
-        //                 margin: EdgeInsets.symmetric(horizontal: 10),
-        //                 color: Theme.of(context).colorScheme.onBackground,
-        //               ),
-        //               Text(
-        //                 user['name'],
-        //                 style: TextStyle(
-        //                   color: Theme.of(context).colorScheme.onBackground,
-        //                 ),
-        //               ),
-        //             ],
-        //           ),
-        //         ),
-        //       )
-        //       .toList(),
-        // ),
+        child: Wrap(
+          children: users
+              .map(
+                (user) => Container(
+                  margin: EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10),
+                  width: 185,
+                  height: 170,
+                  decoration: BoxDecoration(
+                    color: lightRed,
+                    borderRadius: BorderRadius.circular(_radius),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: CircleAvatar(
+                          radius: 30,
+                          child: Center(child: Text(user['name'])),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text('Likes :'),
+                      SizedBox(height: 5),
+                      ...user['places']
+                          .map(
+                            (place) => Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.restaurant,
+                                  size: 12,
+                                ),
+                                SizedBox(width: 5),
+                                Text(place['name']),
+                                Expanded(child: Container()),
+                                ...List.generate(
+                                  place['occupation'] ?? 0,
+                                  (_) => Icon(
+                                    Icons.person,
+                                    size: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          .toList()
+                          .cast<Widget>(),
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
+        ),
       );
 }
 

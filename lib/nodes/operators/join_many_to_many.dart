@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:sangre/nodes/operators/operator_node.dart';
+
 import '../node.dart';
 import '../sources/postgres_table.dart';
+import 'get.dart';
 
 typedef _T = Map<String, dynamic>;
 
@@ -62,14 +65,11 @@ mixin Joinable<T extends PostgresRowMap> on Node<List<T>> {
         _tableNameToId(tableName),
         _tableNameToId(joinKey),
         fromTable != null
-            ? await fromTable
+            ? fromTable
             : fromTableName != null
-                ? await PostgresTableSource(fromTableName)
+                ? PostgresTableSource(fromTableName)
                 : await this,
       ) as Joinable<T>;
-
-  static String _tableNameToId(String tableName) =>
-      "${tableName.substring(0, max(tableName.length - 1, 0))}_id";
 }
 
 extension JoinableFuture<T extends PostgresRowMap> on Future<Joinable<T>> {
@@ -84,3 +84,48 @@ extension JoinableFuture<T extends PostgresRowMap> on Future<Joinable<T>> {
         fromTable: fromTable,
       );
 }
+
+mixin JoinableOne<T extends PostgresRowMap> on Node<T> {
+  String get tableName;
+
+  Future<JoinableOne<T>> joinMany(
+    String joinKey, {
+    String? fromTableName,
+    FutureOr<Node<List<PostgresRowMap>>>? fromTable,
+  }) async =>
+      await Get(
+          JoinManyToMany(
+            NodeOperator1Input<T, List<T>>((e) => Future.value([e]), this),
+            joinKey,
+            PostgresTableSource("${tableName}_$joinKey"),
+            _tableNameToId(tableName),
+            _tableNameToId(joinKey),
+            fromTable != null
+                ? await fromTable
+                : fromTableName != null
+                    ? PostgresTableSource(fromTableName)
+                    : await NodeOperator1Input<T, List<T>>(
+                        (e) => Future.value([e]),
+                        this,
+                      ),
+          ),
+          'id',
+          null);
+}
+
+extension JoinableOneFuture<T extends PostgresRowMap>
+    on Future<JoinableOne<T>> {
+  Future<JoinableOne<T>> joinMany(
+    String joinKey, {
+    String? fromTableName,
+    Node<List<PostgresRowMap>>? fromTable,
+  }) async =>
+      await (await this).joinMany(
+        joinKey,
+        fromTableName: fromTableName,
+        fromTable: fromTable,
+      );
+}
+
+String _tableNameToId(String tableName) =>
+    "${tableName.substring(0, max(tableName.length - 1, 0))}_id";

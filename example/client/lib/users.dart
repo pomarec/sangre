@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'widgets.dart';
@@ -23,14 +22,15 @@ class _UsersListState extends State<UsersList> {
   void initState() {
     super.initState();
     usersStream = WebSocketChannel.connect(Uri.parse(
-      'ws://localhost:3000/ws/users',
+      'ws://localhost:3000/ws/followeds',
     ))
         .stream
         .cast<String>()
         .map(json.decode)
+        .map((e) => e['followeds'])
         .map((e) => (e as List).cast<UserType>())
         .map((e) => {
-              'users': e,
+              'followeds': e,
               'date': DateTime.now(),
             });
   }
@@ -45,17 +45,11 @@ class _UsersListState extends State<UsersList> {
             stream: usersStream,
             builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) =>
                 UsersWidget(
-              users: snapshot.data?['users'] as List<UserType>? ?? [],
+              title: 'Friends',
+              users: snapshot.data?['followeds'] as List<UserType>? ?? [],
               date: snapshot.data?['date'],
             ),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => get(Uri.parse(
-            "http://localhost:3000/addUser",
-          )),
-          tooltip: 'Add user',
-          child: Icon(Icons.add),
         ),
       );
 }
