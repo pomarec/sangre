@@ -8,7 +8,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'utils.dart';
-import 'widgets.dart';
+import 'widgets/infobox.dart';
+import 'widgets/users.dart' hide lightRed;
 
 class UsersDiffedList extends StatefulWidget {
   const UsersDiffedList({Key? key}) : super(key: key);
