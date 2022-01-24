@@ -9,6 +9,7 @@ dependencies:
   flex_color_scheme: ^4.1.0
   flutter:
     sdk: flutter
+  hovering: ^1.0.4
   http: ^0.13.4
   intl: ^0.17.0
   json_patch: ^3.0.0

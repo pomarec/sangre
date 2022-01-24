@@ -95,9 +95,17 @@ class PostgresTableSource extends ListSource<PostgresRowMap>
             (payload['columns'] as List).cast<Map<String, dynamic>>(),
             payload['old_record'],
           );
-          updateRows(
-            (row) => row['id'] == typedRow['id'] ? null : row,
-          );
+
+          // Avoid removing every rows that look like the deleted one
+          var hasDeletedARow = false;
+          updateRows((row) {
+            if (!hasDeletedARow &&
+                row.entries.every((e) => typedRow[e.key] == e.value)) {
+              hasDeletedARow = true;
+              return null;
+            } else
+              return row;
+          });
         },
       );
       channel.subscribe();

@@ -55,6 +55,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  hovering:
+    dependency: "direct main"
+    description:
+      name: hovering
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
   http:
     dependency: "direct main"
     description:
@@ -160,3 +167,4 @@ packages:
     version: "2.1.0"
 sdks:
   dart: ">=2.15.0 <3.0.0"
+  flutter: ">=1.17.0"

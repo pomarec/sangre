@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:json_patch/json_patch.dart';
 import 'package:rxdart/rxdart.dart';
@@ -123,13 +122,6 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.onSurface,
             child: Icon(isConnected ? Icons.cloud_done : Icons.cloud_off),
-          ),
-          FloatingActionButton(
-            onPressed: () => get(Uri.parse(
-              "http://localhost:3000/addUser",
-            )),
-            tooltip: 'Add user',
-            child: Icon(Icons.add),
           ),
         ],
       );

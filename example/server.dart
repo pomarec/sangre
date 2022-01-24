@@ -21,10 +21,9 @@ void main() async {
     ..get(
       '/unfollow',
       (req, res) async {
-        final name = req.uri.queryParameters['name'];
+        final id = req.uri.queryParameters['id'];
         await postgresClient.execute("""
-          INSERT INTO "users" ("id", "name") VALUES
-          (${followedSource.stream.value.length},	'${name ?? randomString()}');
+          DELETE FROM "users_followeds" WHERE "followed_id" = $id;
         """);
       },
     );

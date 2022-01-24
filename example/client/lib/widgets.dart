@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hovering/hovering.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 
 import 'utils.dart';
@@ -113,9 +115,23 @@ class UsersWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(
-                        child: CircleAvatar(
-                          radius: 30,
-                          child: Center(child: Text(user['name'])),
+                        child: GestureDetector(
+                          onTap: () => get(Uri.parse(
+                            "http://localhost:3000/unfollow?id=${user['id']}",
+                          )),
+                          child: HoverCrossFadeWidget(
+                            duration: Duration(milliseconds: 500),
+                            firstChild: CircleAvatar(
+                              radius: 30,
+                              child: Center(child: Text(user['name'])),
+                            ),
+                            secondChild: CircleAvatar(
+                              radius: 30,
+                              child: Center(
+                                child: Icon(Icons.delete),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       SizedBox(height: 10),
