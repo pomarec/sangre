@@ -56,7 +56,7 @@ mixin Joinable<T extends PostgresRowMap> on Node<List<T>> {
   Future<Joinable<T>> joinMany(
     String joinKey, {
     String? fromTableName,
-    Node<List<PostgresRowMap>>? fromTable,
+    Node<List<PostgresRowMap>>? fromNode,
   }) async =>
       await JoinManyToMany(
         await this,
@@ -64,8 +64,8 @@ mixin Joinable<T extends PostgresRowMap> on Node<List<T>> {
         await PostgresTableSource("${tableName}_$joinKey"),
         _tableNameToId(tableName),
         _tableNameToId(joinKey),
-        fromTable != null
-            ? fromTable
+        fromNode != null
+            ? fromNode
             : fromTableName != null
                 ? PostgresTableSource(fromTableName)
                 : await this,
@@ -76,12 +76,12 @@ extension JoinableFuture<T extends PostgresRowMap> on Future<Joinable<T>> {
   Future<Joinable<T>> joinMany(
     String joinKey, {
     String? fromTableName,
-    Node<List<PostgresRowMap>>? fromTable,
+    Node<List<PostgresRowMap>>? fromNode,
   }) async =>
       await (await this).joinMany(
         joinKey,
         fromTableName: fromTableName,
-        fromTable: fromTable,
+        fromNode: fromNode,
       );
 }
 
@@ -91,7 +91,7 @@ mixin JoinableOne<T extends PostgresRowMap> on Node<T> {
   Future<JoinableOne<T>> joinMany(
     String joinKey, {
     String? fromTableName,
-    FutureOr<Node<List<PostgresRowMap>>>? fromTable,
+    FutureOr<Node<List<PostgresRowMap>>>? fromNode,
   }) async =>
       await Get(
           JoinManyToMany(
@@ -100,8 +100,8 @@ mixin JoinableOne<T extends PostgresRowMap> on Node<T> {
             PostgresTableSource("${tableName}_$joinKey"),
             _tableNameToId(tableName),
             _tableNameToId(joinKey),
-            fromTable != null
-                ? await fromTable
+            fromNode != null
+                ? await fromNode
                 : fromTableName != null
                     ? PostgresTableSource(fromTableName)
                     : await NodeOperator1Input<T, List<T>>(
@@ -118,12 +118,12 @@ extension JoinableOneFuture<T extends PostgresRowMap>
   Future<JoinableOne<T>> joinMany(
     String joinKey, {
     String? fromTableName,
-    Node<List<PostgresRowMap>>? fromTable,
+    Node<List<PostgresRowMap>>? fromNode,
   }) async =>
       await (await this).joinMany(
         joinKey,
         fromTableName: fromTableName,
-        fromTable: fromTable,
+        fromNode: fromNode,
       );
 }
 

@@ -7,11 +7,11 @@ void main() async {
   final postgresClient = await setupDB();
 
   // Setup nodes
-  final followedSource = await DB('users').get('id', 1).joinMany(
+  final followedSource = await DBNode('users').get('id', 1).joinMany(
         'followeds',
-        fromTable: DB('users').joinMany(
+        fromNode: DBNode('users').joinMany(
           'places',
-          fromTable: PlacesOccupationFetcherNode(DB('places')),
+          fromNode: PlacesOccupationFetcherNode(DBNode('places')),
         ),
       );
 

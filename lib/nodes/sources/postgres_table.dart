@@ -7,7 +7,7 @@ import '../operators/get.dart';
 import '../operators/join_many_to_many.dart';
 import 'list_source.dart';
 
-typedef DB = PostgresTableSource;
+typedef DBNode = PostgresTableSource;
 
 typedef PostgresRowMap = Map<String, dynamic>;
 
