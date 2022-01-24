@@ -8,6 +8,10 @@ import '../utils.dart';
 
 export '../async_init.dart';
 
+/// Throw this exception in process() when you don't want to
+/// react to the new input.
+class NodeSkipProcess implements Exception {}
+
 /// Any node, especially sources, have to seed their stream with
 /// at least one value before the end of init().
 abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
@@ -26,6 +30,7 @@ abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   Future close() => streamController.close();
 
   _inject(Stream<Output> stream) => stream
+      .where((e) => !(e is NodeSkipProcess))
       .listen(streamController.add)
       // Close this when 'stream' closes
       // Not using .pipe() allows streamController to receive other

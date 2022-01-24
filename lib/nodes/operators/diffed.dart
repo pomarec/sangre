@@ -28,6 +28,7 @@ class Diffed<T> extends Node1Input<T, DiffedDataWithRevision> {
   @override
   Future<DiffedDataWithRevision> process(T input) async {
     final diffs = JsonPatch.diff(lastValue ?? "", input);
+    if (diffs.length == 0) throw NodeSkipProcess();
     lastValue = JsonPatch.apply(lastValue ?? "", diffs);
     revision++;
     await _saveCurrentRevision();
