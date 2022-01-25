@@ -1,0 +1,36 @@
+graph LR
+    subgraph Backend
+        DB[(Postgres<br>+<br>Realtime)]
+
+        DB -.-> DBNodeUsers
+        DB -.-> DBNodePlaces
+        DB -.-> DBNodeUsersFollowed
+        DB -.-> DBNodeUsersPlaces
+
+        subgraph Sangre
+        DBNodeUsers(Source node<br><i>users</u>)
+        DBNodeUsersFollowed(Source node<br><i>users_followed</u>)
+        DBNodePlaces(Source node<br><i>places</u>)
+        DBNodeUsersPlaces(Source node<br><i>users_places</u>)
+        
+        NodeJoinFollowed((JoinMany<br><i>followeds</i>))
+        NodeJoinPlaces((JoinMany<br><i>places</i>))
+        NodeGet((Get<br><i>id == 1</i>))
+        
+        DBNodeUsers-->NodeGet-->NodeJoinFollowed
+        DBNodeUsersFollowed--->NodeJoinFollowed
+        
+        DBNodeUsers-->NodeJoinPlaces
+        DBNodePlaces-->NodeJoinPlaces
+        DBNodeUsersPlaces-->NodeJoinPlaces
+        NodeJoinPlaces-->NodeJoinFollowed
+
+        NodeJoinFollowed-->NodeDiff((Diffed))
+        end
+    end
+    subgraph Frontend
+        NodeDiff-.websocket.->ClientIOS{iOS app}
+        NodeDiff-.websocket.->ClientAndroid{Android app}
+        NodeDiff-.websocket.->ClientWeb{Web app}
+        NodeDiff-.websocket.->ClientDesktop{Desktop app}
+    end
