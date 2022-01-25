@@ -18,7 +18,7 @@ Sangre lives with your current backend framework (expressjs, django, rails, etc.
 [Acknowledgments](#acknowledgments)
 
 
-![Generic badge](https://img.shields.io/static/v1?label=Status&message=Alpha&color=orange&style=flat)
+![Generic badge](https://img.shields.io/static/v1?label=Status&message=Proof%20Of%20Concept&color=orange&style=flat)
 ![Generic badge](https://img.shields.io/static/v1?label=Licence&message=GPLv3&color=green&style=flat)
 ![Generic badge](https://img.shields.io/static/v1?label=Contact&message=po@marec.me&color=blue&style=flat)
 
@@ -64,7 +64,7 @@ The result of such query is streamed to client using incremental updates, minimi
 
 Typical use case is a client-server topology, a mobile or web app consuming an API (expressjs, django, rails, etc.) in front of a database (postgres, mongo, mysql, etc.). You want realtime data in your app without all the complexity of developing your own data sync.
 
-Sangre implements all the following features and let the developers focus of business logic.
+Sangre implements all the following features and let the developers focus on business logic.
 
 <div align="center">
 
@@ -92,7 +92,7 @@ Nodes may be filters, joins, populators. Root nodes provide data from the underl
   </h3>
 </div>
 
-# Limitations (alpha)
+# Limitations (PoC)
 
 *Note:  Dart is temporary, TypeScript might be the final implementation. I just happened to have my head in Dart when starting the PoC.*
 
@@ -114,16 +114,16 @@ Diff algorithm is currently JSON patch. This can be easily changed for a more re
 
 *Note : only postgres supported ATM (more to come)*
 
-todo
+*Note : You can use docker-compose.yml to get a working example running*
 
-## 1. Enable postgres replication
+## 1. Enable postgres replication (TODO)
 
 ```
 ALTER SYSTEM SET wal_level = logical;
 CREATE PUBLICATION supabase_realtime FOR ALL TABLES;
 ```
 
-## 2. Install realtime broker
+## 2. Install realtime broker (TODO)
 
 ```
 insert supabase realtime installation steps

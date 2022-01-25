@@ -16,7 +16,7 @@ class Diffed<T> extends Node1Input<T, DiffedDataWithRevision> {
   Diffed(
     Node<T> nodeI1,
     this.postgresClient, {
-    this.tableName = "sangre_nodes_history",
+    this.tableName = "sangre_nodes_diff_history",
   }) : super(nodeI1);
 
   @override
@@ -61,15 +61,15 @@ class Diffed<T> extends Node1Input<T, DiffedDataWithRevision> {
   }
 
   _createHistoryTable() async => postgresClient.execute("""
-    ALTER TABLE "$tableName" REPLICA IDENTITY FULL;
+    DROP TABLE IF EXISTS "$tableName";
 
-    DROP TABLE "$tableName";
-
-    CREATE TABLE IF NOT EXISTS "$tableName" (
+    CREATE TABLE "$tableName" (
       "id" VARCHAR(255) NOT NULL,
       "revision" integer NOT NULL,
       "snapshot" jsonb
     );
+
+    ALTER TABLE "$tableName" REPLICA IDENTITY FULL;
   """);
 
   _saveCurrentRevision() async => postgresClient.execute("""

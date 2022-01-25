@@ -13,18 +13,22 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../env.dart';
 
 void main() async {
-  HttpServer? server;
+  late HttpServer server;
 
   setUp(() async {
     server = await setupServer();
   });
 
+  tearDown(() async {
+    await server.close();
+  });
+
   group('User list', () {
-    Stream? usersStream;
+    late Stream usersStream;
 
     setUp(() async {
       usersStream = WebSocketChannel.connect(Uri.parse(
-        'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users',
+        'ws://${server.address.host}:${server.port}/ws/users',
       )).stream.cast<String>().map(json.decode);
     });
 
@@ -38,7 +42,7 @@ void main() async {
     test('Retrieve and add user', () async {
       final newUserName = randomString();
       await get(Uri.parse(
-        "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
+        "http://${server.address.host}:${server.port}/addUser?name=$newUserName",
       ));
 
       expect(
@@ -62,7 +66,7 @@ void main() async {
   group('User list diffed', () {
     Stream _buildUsersStream([int lastRevision = 0, List? lastUsers]) =>
         WebSocketChannel.connect(Uri.parse(
-          'ws://$realtimeServerAddress:${server?.port ?? 4000}/ws/users-diffed?from=$lastRevision',
+          'ws://${server.address.host}:${server.port}/ws/users-diffed?from=$lastRevision',
         )).stream.cast<String>().doOnData(print).map(json.decode).foldStream(
           {'revision': lastRevision, 'users': lastUsers ?? []},
           (previous, diffs) => {
@@ -75,7 +79,7 @@ void main() async {
           },
         );
 
-    Stream? usersStream;
+    late Stream usersStream;
 
     setUp(() async {
       usersStream = _buildUsersStream();
@@ -83,7 +87,7 @@ void main() async {
 
     test('Retrieve', () async {
       expect(
-        usersStream?.map((e) => e['users']),
+        usersStream.map((e) => e['users']),
         emitsInOrder([_usersBeforeAdd]),
       );
     });
@@ -91,11 +95,11 @@ void main() async {
     test('Retrieve and add user', () async {
       final newUserName = randomString();
       await get(Uri.parse(
-        "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
+        "http://${server.address.host}:${server.port}/addUser?name=$newUserName",
       ));
 
       expect(
-        usersStream?.map((e) => e['users']),
+        usersStream.map((e) => e['users']),
         emitsInOrder([
           _usersBeforeAdd,
           [
@@ -112,14 +116,14 @@ void main() async {
     });
 
     test('Retrieve and add user with history', () async {
-      final lastData = await usersStream?.first;
+      final lastData = await usersStream.first;
 
       expect(lastData['revision'], equals(1));
       expect(lastData['users'], equals(_usersBeforeAdd));
 
       final newUserName = randomString();
       await get(Uri.parse(
-        "http://$realtimeServerAddress:${server?.port ?? 4000}/addUser?name=$newUserName",
+        "http://${server.address.host}:${server.port}/addUser?name=$newUserName",
       ));
 
       final newUsersStream = _buildUsersStream(
@@ -154,7 +158,7 @@ Future<HttpServer> setupServer() async {
   var postgresClient = PostgreSQLConnection(
     postgresServerAddress,
     5432,
-    "tests",
+    "postgres",
     username: "postgres",
     password: "example",
   );
@@ -205,8 +209,10 @@ Future<HttpServer> setupServer() async {
     });
 
   // app.printRoutes();
-  return await app.listen();
+  return await app.listen(port++);
 }
+
+int port = 3000;
 
 final _usersBeforeAdd = [
   {

@@ -22,7 +22,7 @@ class _UsersListState extends State<UsersList> {
   void initState() {
     super.initState();
     usersStream = WebSocketChannel.connect(Uri.parse(
-      'ws://localhost:3000/ws/followeds',
+      'ws://127.0.0.1:3000/ws/followeds',
     ))
         .stream
         .cast<String>()

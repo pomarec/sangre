@@ -13,34 +13,40 @@ services:
     ports:
       - 5432:5432
 
-  adminer:
-    image: adminer
+  pgweb:
+    image: sosedoff/pgweb
+    ports: 
+      - 8081:8081
+    environment:
+      - DATABASE_URL=postgres://postgres:example@db:5432/postgres?sslmode=disable
     depends_on:
       - db
-    environment:
-      ADMINER_DESIGN: pepa-linha-dark 
-    ports:
-      - 8080:8080
-
+        
   realtime:
     image: supabase/realtime
     depends_on:
       - db
     environment:
       DB_HOST: db
-      DB_NAME: tests
       DB_PASSWORD: example
       SECURE_CHANNELS: false
     ports:
       - 4000:4000
 
-  test:
-    build:
-      context: ../
-      dockerfile: test/Dockerfile
+  test: &dart
+    build: .
     depends_on:
       - db
       - realtime
     environment:
       POSTGRES_SERVER: db
       REALTIME_SERVER: realtime
+    # We force serial test as they depend on the same database
+    # Somehow tests work one by one but not alltogether
+    command: dart test --concurrency=1 
+      
+  example: 
+    <<: *dart
+    command: dart example/server.dart
+    ports:
+      - 3000:3000

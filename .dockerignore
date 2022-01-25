@@ -6,3 +6,4 @@ build/
 .github/
 .gitignore
 .packages
+example/client/

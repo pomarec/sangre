@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:alfred/alfred.dart';
 import 'package:sangre/sangre.dart';
 
+import '../test/env.dart';
+
 void main() async {
   final postgresClient = await setupDB();
 
@@ -33,14 +35,15 @@ void main() async {
 
 Future<PostgreSQLConnection> setupDB() async {
   var postgresClient = PostgreSQLConnection(
-    "localhost",
+    postgresServerAddress,
     5432,
-    "tests",
+    "postgres",
     username: "postgres",
     password: "example",
   );
   PostgresTableSource.globalPostgresClient = postgresClient;
-  final realtimeClient = RealtimeClient('ws://localhost:4000/socket');
+  final realtimeClient =
+      RealtimeClient('ws://${realtimeServerAddress}:4000/socket');
   PostgresTableSource.globalRealtimeClient = realtimeClient;
   await postgresClient.open();
   realtimeClient.connect();

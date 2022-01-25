@@ -66,7 +66,7 @@ class _UsersWidgetState extends State<UsersWidget> {
                             Center(
                               child: GestureDetector(
                                 onTap: () => get(Uri.parse(
-                                  "http://localhost:3000/unfollow?id=${user['id']}",
+                                  "http://127.0.0.1:3000/unfollow?id=${user['id']}",
                                 )),
                                 child: HoverCrossFadeWidget(
                                   duration: Duration(milliseconds: 500),

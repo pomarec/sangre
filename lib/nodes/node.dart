@@ -30,7 +30,7 @@ abstract class Node<Output> with AsyncInitMixin<Node<Output>> {
   Future close() => streamController.close();
 
   _inject(Stream<Output> stream) => stream
-      .where((e) => !(e is NodeSkipProcess))
+      .handleError((e) {}, test: (e) => e is NodeSkipProcess)
       .listen(streamController.add)
       // Close this when 'stream' closes
       // Not using .pipe() allows streamController to receive other

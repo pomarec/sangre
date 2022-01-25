@@ -9,7 +9,7 @@ void main() async {
   var postgresClient = PostgreSQLConnection(
     postgresServerAddress,
     5432,
-    "tests",
+    "postgres",
     username: "postgres",
     password: "example",
   );
