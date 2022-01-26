@@ -114,21 +114,34 @@ Diff algorithm is currently JSON patch. This can be easily changed for a more re
 
 *Note : only postgres supported ATM (more to come)*
 
-*Note : You can use docker-compose.yml to get a working example running*
+*Note : You can use .docker/docker-compose.yml to get a working example running*
 
-## 1. Enable postgres replication (TODO)
+## 1. Enable postgres replication
 
+Run once on your postgres database :
 ```
 ALTER SYSTEM SET wal_level = logical;
 CREATE PUBLICATION supabase_realtime FOR ALL TABLES;
 ```
 
-## 2. Install realtime broker (TODO)
+## 2. Install realtime broker
+
+Sangre uses [supabase/realtime](https://github.com/supabase/realtime/) to listen to database changes (insert/modify/delete of rows).
+
+You can see details of its capabilities and installation process on their repo.
+
+We give you an example of how to run it in docker compose :
 
 ```
-insert supabase realtime installation steps
+  realtime:
+    image: supabase/realtime
+    environment:
+      DB_HOST: <your_db_ip>
+      DB_PASSWORD: <your_db_password>
+      SECURE_CHANNELS: false
+    ports:
+      - 4000:4000
 ```
-
 
 # Contact
 
@@ -143,6 +156,8 @@ Project Link: [https://github.com/pomarec/sangre](https://github.com/pomarec/san
   - [NoriaDB](https://github.com/mit-pdos/noria/) : Huge thanks to [Jon Gjengset](https://github.com/jonhoo) for clearing up my mind about this topic ([Whitepaper](https://www.usenix.org/conference/osdi18/presentation/gjengset)). Sangre is not an implementation of this paper though.
   - All the work done around materialized views and dataflows ([Raw list of sources](https://tartan-durian-108.notion.site/Pre-research-916a864988604fe2821d063321348a26))
 
+- Supabase for their [realtime](https://github.com/supabase/realtime/) tool that transforms postgres replica "stream" to websocket events (easy to consume)
+
 - Dart librairies :
   - alfred
   - dartz
@@ -154,4 +169,5 @@ Project Link: [https://github.com/pomarec/sangre](https://github.com/pomarec/san
   - flutter
   - flex_color_scheme
   - hovering
+
 - <a href="https://www.flaticon.com/free-icons/blood" title="blood icons">Blood icons created by Freepik - Flaticon</a>
