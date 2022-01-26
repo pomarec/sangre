@@ -51,5 +51,7 @@ services:
   example: 
     <<: *dart
     command: dart example/server.dart
+    volumes:
+      - ../example/server.dart:/app/example/server.dart
     ports:
       - 3000:3000

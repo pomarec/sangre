@@ -52,7 +52,10 @@ void main() async {
 This exposes a websocket endpoint streaming the user (id==1) with its followed users populated with their places.
 
 The websocket streams the updates as this data changes in the database.
+
 See working example [here](example/).
+
+[![Screencast of example](doc/screencast.gif "Screencast of example")](https://raw.githubusercontent.com/pomarec/sangre/main/doc/screencast.gif)
 
 # About The Project
 
@@ -119,10 +122,16 @@ Diff algorithm is currently JSON patch. This can be easily changed for a more re
 ## 1. Enable postgres replication
 
 Run once on your postgres database :
-```
+```sql
 ALTER SYSTEM SET wal_level = logical;
 CREATE PUBLICATION supabase_realtime FOR ALL TABLES;
 ```
+
+Reload your postgres configuration :
+```
+pg_ctl reload
+```
+
 
 ## 2. Install realtime broker
 
