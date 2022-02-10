@@ -21,6 +21,6 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
-        }
+        },
     ]
 }
