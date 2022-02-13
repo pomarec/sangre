@@ -10,15 +10,20 @@ export class ListSource<Row> extends Node<Array<Row>> {
     }
 
     insertRow(row: Row) {
+        console.log("Inserting " + row)
         this.setRows([...this.state, row])
     }
 
     setRows(rows: Array<Row>) {
         this.state = [...rows]
-        this.subject.next(this.state)
+        this.subject$.next(this.state)
     }
 
     updateRows(map: ((_: Row) => Row | undefined)) {
-        this.setRows([...this.state].filter(map).filter((e) => !_.isNil(e)))
+        this.setRows(
+            [...this.state].filter(map).filter(
+                (e) => !_.isNil(e)
+            )
+        )
     }
 }
