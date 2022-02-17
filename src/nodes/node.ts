@@ -157,4 +157,33 @@ export abstract class Node2Input<I1, I2, Output> extends Node<Output> {
     }
 }
 
+export abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
+    nodeI1: Node<I1>
+    nodeI2: Node<I2>
+    nodeI3: Node<I3>
+
+    constructor(nodeI1: Node<I1>, nodeI2: Node<I2>, nodeI3: Node<I3>) {
+        super()
+        this.nodeI1 = nodeI1
+        this.nodeI2 = nodeI2
+        this.nodeI3 = nodeI3
+        this.nodeId = `${this.constructor.name}[${nodeI1.nodeId}, ${nodeI2.nodeId}, , ${nodeI3.nodeId}]`
+        appendAsyncConstructor(this, async () => {
+            this.nodeI1 = await nodeI1
+            this.nodeI2 = await nodeI2
+            this.nodeI3 = await nodeI3
+            await this.setupInputsProcessing([nodeI1, nodeI2, nodeI3])
+        })
+    }
+
+    async processUntyped(inputs: Array<any>): Promise<Output> {
+        return this.process(inputs[0] as I1, inputs[1] as I2, inputs[2] as I3)
+    }
+
+    async process(i1: I1, i2: I2, i3: I3): Promise<Output> {
+        throw Error("Not implemented")
+    }
+}
+
+
 

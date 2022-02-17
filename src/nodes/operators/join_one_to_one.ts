@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { Node, Node2Input } from '../node'
 
-export class JoinOneToOne<T extends {}>
+export class JoinOneToOne<T>
     extends Node2Input<Array<T>, Array<T>, Array<T>> {
     /// Key of input1 items to match items from input2
     /// Can be a string or a Function(item of input1)
@@ -37,7 +37,7 @@ export class JoinOneToOne<T extends {}>
                     const matchingValue = _.isString(this.matchingKey)
                         ? (input2Element as any)[this.matchingKey]
                         : (this.matchingKey as ((item: T) => any))(input2Element)
-                    if (matchingValue == joinValue) {
+                    if (matchingValue === joinValue) {
                         if (_.isString(this.joinedKey))
                             (input1Element as any)[this.joinedKey] = input2Element
                         else

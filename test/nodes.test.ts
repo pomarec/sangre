@@ -43,7 +43,7 @@ describe("Operators", async function () {
 
     it('Combine slow growing list source with an async operator', async function () {
         const chain = await new NodeOperator1Input(
-            async (a) => await delayed(1500, () => a.length * 2),
+            async (a) => await delayed(500, () => a.length * 2),
             new GrowingListSource(3),
         )
         await expectNodeToEmitInOrder(chain, [2, 4, 6])

@@ -1,4 +1,5 @@
 export * from './nodes/node'
+export * from './nodes/operators/join_many_to_many'
 export * from './nodes/operators/join_one_to_one'
 export * from './nodes/operators/operators'
 export * from './nodes/sources/growing_list'
