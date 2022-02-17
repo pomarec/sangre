@@ -1,14 +1,13 @@
 
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { Observable } from 'rxjs'
-import { GrowingListSource, NodeOperator1Input, NodeOperator2Input } from '../src/index'
-import { delayed, expectObservableToEmitInOrder } from './index.test'
+import { delayed, GrowingListSource, NodeOperator1Input, NodeOperator2Input } from '../src/index'
+import { expectNodeToEmitInOrder } from './index.test'
 
 describe("Sources", async function () {
     it('Growling list source', async function () {
         const source = await new GrowingListSource(3)
-        await expectObservableToEmitInOrder(source.subjectWithLastValue$ as Observable<Array<number>>, [
+        await expectNodeToEmitInOrder(source, [
             [0],
             [0, 1],
             [0, 1, 2],
@@ -23,23 +22,23 @@ describe("Operators", async function () {
             async (values) => values.length,
             new GrowingListSource(3),
         )
-        await expectObservableToEmitInOrder(chain.subjectWithLastValue$, [1, 2, 3])
+        await expectNodeToEmitInOrder(chain, [1, 2, 3])
     })
 
     it('Combine fast growing list source with an async operator', async function () {
         const chain = await new NodeOperator1Input(
-            async (a) => await delayed(50, a.length * 2),
+            async (a) => await delayed(50, () => a.length * 2),
             new GrowingListSource(3),
         )
-        await expectObservableToEmitInOrder(chain.subjectWithLastValue$, [2, 4, 6])
+        await expectNodeToEmitInOrder(chain, [2, 4, 6])
     })
 
     it('Combine slow growing list source with an async operator', async function () {
         const chain = await new NodeOperator1Input(
-            async (a) => await delayed(1500, a.length * 2),
+            async (a) => await delayed(1500, () => a.length * 2),
             new GrowingListSource(3),
         )
-        await expectObservableToEmitInOrder(chain.subjectWithLastValue$, [2, 4, 6])
+        await expectNodeToEmitInOrder(chain, [2, 4, 6])
     })
 
     it('Combine two growing list source with count operator', async function () {
@@ -48,8 +47,8 @@ describe("Operators", async function () {
             new GrowingListSource(3),
             new GrowingListSource(4),
         )
-        await expectObservableToEmitInOrder(
-            chain.subjectWithLastValue$,
+        await expectNodeToEmitInOrder(
+            chain,
             [2, 3, 4, 5, 6, 7]
         )
     })
@@ -61,7 +60,7 @@ describe("Operators", async function () {
             source,
         )
 
-        delayed(source.intervalInMs * 5, 5).then(source.insertRow.bind(source))
-        await expectObservableToEmitInOrder(chain.subjectWithLastValue$, [0, 1, 3, 8])
+        delayed(source.intervalInMs * 5, () => source.insertRow.bind(source)(5))
+        await expectNodeToEmitInOrder(chain, [0, 1, 3, 8])
     })
 })

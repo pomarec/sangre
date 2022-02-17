@@ -1,19 +1,28 @@
 
 import { expect } from 'chai'
-import { firstValueFrom, Observable, take, toArray } from 'rxjs'
+import { Node } from '../src'
 
-export async function expectObservableToEmit<T>(observable: Observable<T>, value: T) {
-    return expectObservableToEmitInOrder(observable, [value])
+
+export async function expectNodeToEmit<T>(node: Node<T>, value: T) {
+    return expectNodeToEmitInOrder(node, [value])
 }
 
-export async function expectObservableToEmitInOrder<T>(observable: Observable<T>, values: Array<T>) {
-    const nthValues = observable.pipe(take(values.length), toArray())
-    const valuesEmitted = await firstValueFrom(nthValues)
-    return expect(valuesEmitted).to.deep.equal(values)
-}
-
-export async function delayed<T>(ms: number, value: T): Promise<T> {
-    return new Promise<T>(resolve => setTimeout(
-        () => resolve(value)
-        , ms))
+export function expectNodeToEmitInOrder<T>(node: Node<T>, values: Array<T>): Promise<void> {
+    return new Promise((resolve, reject) => {
+        var emittedValues = new Array<T>()
+        const subscription = node.subscribe({
+            next: (data) => {
+                emittedValues.push(data)
+                if (emittedValues.length >= values.length) {
+                    subscription.unsubscribe()
+                    try {
+                        expect(emittedValues).to.be.deep.equals(values)
+                        resolve()
+                    } catch (e) {
+                        reject(e)
+                    }
+                }
+            }
+        })
+    })
 }

@@ -15,7 +15,7 @@ export class NodeOperator1Input<I1, Output> extends Node1Input<I1, Output> {
     }
 
     async process(i1: I1): Promise<Output> {
-        console.log("Processing " + i1)
+        // console.log("Processing " + i1)
         return await this.operation(i1)
     }
 }

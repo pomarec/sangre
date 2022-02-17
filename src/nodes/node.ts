@@ -1,6 +1,7 @@
 import { appendAsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
-import { combineLatest, merge, Observable, of, Subject, Subscription } from 'rxjs'
+import { v4 as uuidv4 } from 'uuid'
+
 
 /// Throw this exception in process() when you don't want to
 /// react to the new input.
@@ -11,52 +12,76 @@ class NodeSkipProcess extends Error {
     }
 }
 
+interface Observer<T> {
+    next(value: T): void
+}
+
+interface Subscription {
+    unsubscribe(): void
+}
+
 /// Any node, especially sources, have to seed their stream with
 /// at least one value before the end of init().
 export abstract class Node<Output> {
-    /// This should be set at initialization once and never touched then
-    nodeId: string = "Uninitialized"
-    readonly subject$ = new Subject<Output>();
+    nodeId: string
+    value?: Output
+    private observers = new Map<String, Observer<Output>>()
+    private inputsSubscriptions = new Set<Subscription>()
+    private executionQueue = new SerialExecutionQueue()
 
-    protected value?: Output
-    private _valueSubscription?: Subscription
-    get subjectWithLastValue$() {
-        return _.isNil(this.value) ? this.subject$ : merge(of(this.value), this.subject$)
-    }
-
-    constructor(initialValue?: Output) {
+    constructor() {
         this.nodeId = this.constructor.name
-        this._valueSubscription = this.subject$.subscribe((v) => this.value = v)
-        if (!_.isNil(initialValue))
-            this.subject$.next(initialValue)
     }
 
-    async close() {
-        this._valueSubscription?.unsubscribe()
-        await this.subject$.complete()
+    subscribe(observer: Observer<Output>): Subscription {
+        const subscriptionId = uuidv4()
+        this.observers.set(subscriptionId, observer)
+        return {
+            unsubscribe: () => {
+                this.observers.delete(subscriptionId)
+            }
+        }
     }
 
-    protected async setupProcessing(nodes: Array<Node<any>>) {
-        const output$: Observable<Output> =
-            asyncMap<Array<any>, Output>(
-                combineLatest(nodes.map((n) => n.subjectWithLastValue$)),
-                (subjects: Array<any>): Promise<Output> => this.processUntyped.bind(this)(subjects),
+    unsubscribe(subscriptionId: String) {
+        this.observers.delete(subscriptionId)
+    }
+
+    emit(value: Output) {
+        this.value = value
+        for (var [_, observer] of this.observers)
+            observer.next(value)
+    }
+
+    protected async setupInputsProcessing(inputNodes: Array<Node<any>>) {
+        var inputsLastData = new Array(inputNodes.length)
+        for (var inputNodeIndex in inputNodes)
+            this.inputsSubscriptions.add(
+                inputNodes[inputNodeIndex].subscribe({
+                    next: (data) => {
+                        inputsLastData[inputNodeIndex] = data
+                        if (_.every(inputsLastData, (e) => !_.isNull(e))) {
+                            const inputs = _.clone(inputsLastData)
+                            this.executionQueue.queue(
+                                async () => {
+                                    const output = await this.processUntyped(inputs)
+                                    this.emit(output)
+                                }
+                            )
+                        }
+                    }
+                })
             )
-        output$
-            // .handleError((e) { }, test: (e) => e is NodeSkipProcess)
-            .subscribe((e) => {
-                console.log("emitting " + e)
-                this.subject$.next.bind(this.subject$)(e)
-            })
-        // Close this when 'stream' closes
-        // Not using .pipe() allows streamController to receive other
-        // events simulteanously
-        // .asFuture()
-        // .then((_) => close())
     }
 
     protected async processUntyped(inputs: Array<any>): Promise<Output> {
         throw Error("Not implemented")
+    }
+
+    protected async close() {
+        for (var subscription of this.inputsSubscriptions)
+            subscription.unsubscribe()
+        this.inputsSubscriptions.clear()
     }
 }
 
@@ -69,7 +94,7 @@ export abstract class Node1Input<I1, Output> extends Node<Output> {
         this.nodeId = `${this.constructor.name}[${nodeI1.nodeId}]`
         appendAsyncConstructor(this, async () => {
             this.nodeI1 = await nodeI1
-            await this.setupProcessing([nodeI1])
+            await this.setupInputsProcessing([nodeI1])
         })
     }
 
@@ -95,7 +120,7 @@ export abstract class Node2Input<I1, I2, Output> extends Node<Output> {
         appendAsyncConstructor(this, async () => {
             this.nodeI1 = await nodeI1
             this.nodeI2 = await nodeI2
-            await this.setupProcessing([nodeI1, nodeI2])
+            await this.setupInputsProcessing([nodeI1, nodeI2])
         })
     }
 
@@ -108,25 +133,24 @@ export abstract class Node2Input<I1, I2, Output> extends Node<Output> {
     }
 }
 
-function asyncMap<I, O>(input$: Observable<I>, map: (_: I) => Promise<O>): Observable<O> {
-    return new Observable<O>(function subscribe(subscriber) {
-        const inputQueue = new Array<I>()
-        var isUnqueing = false
+export class SerialExecutionQueue {
+    private remainingExecutions = new Array<() => Promise<void>>()
+    private isUnqueing = false
 
-        const unqueue = async () => {
-            if (!isUnqueing && !_.isEmpty(inputQueue)) {
-                isUnqueing = true
-                const input: I = inputQueue.shift() as I
-                const output = await map(input)
-                subscriber.next(output)
-                isUnqueing = false
-                unqueue()
-            }
+    async queue(task: () => Promise<void>) {
+        this.remainingExecutions.push(task)
+        this.unqueue()
+    }
+
+    private async unqueue() {
+        if (!this.isUnqueing && !_.isEmpty(this.remainingExecutions)) {
+            this.isUnqueing = true
+            const task = this.remainingExecutions.shift()
+            if (task != undefined)
+                await task()
+            this.isUnqueing = false
+            this.unqueue()
         }
-
-        input$.subscribe((value) => {
-            inputQueue.push(value)
-            unqueue()
-        })
-    })
+    }
 }
+
