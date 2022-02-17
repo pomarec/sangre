@@ -1,7 +1,7 @@
 import { appendAsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
-
+import { SerialExecutionQueue } from '../utils'
 
 /// Throw this exception in process() when you don't want to
 /// react to the new input.
@@ -25,7 +25,7 @@ interface Subscription {
 export abstract class Node<Output> {
     nodeId: string
     value?: Output
-    private observers = new Map<String, Observer<Output>>()
+    private observers = new Map<string, Observer<Output>>()
     private inputsSubscriptions = new Set<Subscription>()
     private executionQueue = new SerialExecutionQueue()
 
@@ -33,9 +33,12 @@ export abstract class Node<Output> {
         this.nodeId = this.constructor.name
     }
 
-    subscribe(observer: Observer<Output>): Subscription {
+    subscribe(observer: Observer<Output>, skipCurrentValue = false): Subscription {
         const subscriptionId = uuidv4()
         this.observers.set(subscriptionId, observer)
+        const value = this.value
+        if (!_.isNil(value) && !skipCurrentValue)
+            observer.next(value)
         return {
             unsubscribe: () => {
                 this.observers.delete(subscriptionId)
@@ -43,24 +46,26 @@ export abstract class Node<Output> {
         }
     }
 
-    unsubscribe(subscriptionId: String) {
+    unsubscribe(subscriptionId: string) {
         this.observers.delete(subscriptionId)
     }
 
     emit(value: Output) {
         this.value = value
-        for (var [_, observer] of this.observers)
+        this.observers.forEach((observer) =>
             observer.next(value)
+        )
     }
 
     protected async setupInputsProcessing(inputNodes: Array<Node<any>>) {
         var inputsLastData = new Array(inputNodes.length)
-        for (var inputNodeIndex in inputNodes)
+        inputsLastData.fill(undefined)
+        inputNodes.forEach((node, index) =>
             this.inputsSubscriptions.add(
-                inputNodes[inputNodeIndex].subscribe({
+                inputNodes[index].subscribe({
                     next: (data) => {
-                        inputsLastData[inputNodeIndex] = data
-                        if (_.every(inputsLastData, (e) => !_.isNull(e))) {
+                        inputsLastData[index] = data
+                        if (_.every(inputsLastData, (e) => !_.isNil(e))) {
                             const inputs = _.clone(inputsLastData)
                             this.executionQueue.queue(
                                 async () => {
@@ -72,6 +77,7 @@ export abstract class Node<Output> {
                     }
                 })
             )
+        )
     }
 
     protected async processUntyped(inputs: Array<any>): Promise<Output> {
@@ -82,6 +88,24 @@ export abstract class Node<Output> {
         for (var subscription of this.inputsSubscriptions)
             subscription.unsubscribe()
         this.inputsSubscriptions.clear()
+    }
+
+    // Utils
+
+    /// Return the next "length" values emited by this node
+    async take(length: number): Promise<Array<Output>> {
+        return new Promise((resolve) => {
+            var emittedValues = new Array<Output>()
+            const subscription = this.subscribe({
+                next: (data) => {
+                    emittedValues.push(data)
+                    if (emittedValues.length >= length) {
+                        subscription.unsubscribe()
+                        resolve(emittedValues)
+                    }
+                }
+            }, true)
+        })
     }
 }
 
@@ -133,24 +157,4 @@ export abstract class Node2Input<I1, I2, Output> extends Node<Output> {
     }
 }
 
-export class SerialExecutionQueue {
-    private remainingExecutions = new Array<() => Promise<void>>()
-    private isUnqueing = false
-
-    async queue(task: () => Promise<void>) {
-        this.remainingExecutions.push(task)
-        this.unqueue()
-    }
-
-    private async unqueue() {
-        if (!this.isUnqueing && !_.isEmpty(this.remainingExecutions)) {
-            this.isUnqueing = true
-            const task = this.remainingExecutions.shift()
-            if (task != undefined)
-                await task()
-            this.isUnqueing = false
-            this.unqueue()
-        }
-    }
-}
 

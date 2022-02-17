@@ -25,6 +25,14 @@ describe("Operators", async function () {
         await expectNodeToEmitInOrder(chain, [1, 2, 3])
     })
 
+    it('Combine growing list source with count operator (with await)', async function () {
+        const chain = await new NodeOperator1Input(
+            async (values) => values.length,
+            await new GrowingListSource(3),
+        )
+        await expectNodeToEmitInOrder(chain, [1, 2, 3])
+    })
+
     it('Combine fast growing list source with an async operator', async function () {
         const chain = await new NodeOperator1Input(
             async (a) => await delayed(50, () => a.length * 2),
