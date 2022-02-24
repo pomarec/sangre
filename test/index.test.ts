@@ -8,5 +8,6 @@ export async function expectNodeToEmit<T>(node: Node<T>, value: T) {
 }
 
 export async function expectNodeToEmitInOrder<T>(node: Node<T>, values: Array<T>): Promise<void> {
-    expect(await node.take(values.length)).to.be.deep.equals(values)
+    const results = await node.take(values.length)
+    expect(results).to.be.deep.equals(values)
 }
