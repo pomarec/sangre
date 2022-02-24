@@ -25,6 +25,7 @@ interface Subscription {
 export abstract class Node<Output> {
     nodeId: string
     value?: Output
+    protected isClosed = false
     private observers = new Map<string, Observer<Output>>()
     private inputsSubscriptions = new Set<Subscription>()
     private executionQueue = new SerialExecutionQueue()
@@ -85,9 +86,14 @@ export abstract class Node<Output> {
     }
 
     protected async close() {
-        for (var subscription of this.inputsSubscriptions)
-            subscription.unsubscribe()
-        this.inputsSubscriptions.clear()
+        if (this.isClosed)
+            throw Error("Can't close node twice")
+        else {
+            this.isClosed = true
+            for (var subscription of this.inputsSubscriptions)
+                subscription.unsubscribe()
+            this.inputsSubscriptions.clear()
+        }
     }
 
     // Utils
