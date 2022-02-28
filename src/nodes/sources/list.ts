@@ -3,20 +3,20 @@ import { Node } from '../node'
 
 export class ListSource<Row> extends Node<Array<Row>> {
     insertRow(row: Row) {
-        // console.log("Inserting " + row)
+        // console.log("ListSource.insertRow " + JSON.stringify(row))
         this.setRows([...(this.value || []), row])
     }
 
     setRows(rows: Array<Row>) {
-        // console.log("set " + rows)
+        // console.log("ListSource.setRows " + JSON.stringify(rows))
         this.emit([...rows])
     }
 
     updateRows(map: ((_: Row) => Row | undefined)) {
         this.setRows(
-            [...(this.value || [])].filter(map).filter(
+            ([...(this.value || [])].map(map) as Array<Row | undefined>).filter(
                 (e) => !_.isNil(e)
-            )
+            ) as Array<Row>
         )
     }
 }

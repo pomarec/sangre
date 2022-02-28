@@ -1,10 +1,16 @@
 
 import { RealtimeClient } from '@supabase/realtime-js'
 import { expect } from 'chai'
+import _ from 'lodash'
 import { describe } from 'mocha'
 import { Client } from 'pg'
 import { PostgresTableSource } from '../src/index'
 import { expectNodeToEmit } from './index.test'
+
+const _initialUsers = [
+    { 'id': 0, 'name': 'fred' },
+    { 'id': 1, 'name': 'omar' }
+]
 
 describe("Postgres table", async function () {
     beforeEach(async function () {
@@ -34,7 +40,7 @@ describe("Postgres table", async function () {
         expect(users.value).to.be.deep.equal(_initialUsers)
     })
 
-    it.only('Data insert', async function () {
+    it('Data insert', async function () {
         const users = await new PostgresTableSource(this.postgresClient, 'users', this.realtimeClient)
         await this.postgresClient.query(`
             INSERT INTO "users" ("id", "name") VALUES
@@ -61,9 +67,27 @@ describe("Postgres table", async function () {
             }])
         )
     })
-})
 
-const _initialUsers = [
-    { 'id': 0, 'name': 'fred' },
-    { 'id': 1, 'name': 'omar' }
-]
+    it('Data update', async function () {
+        const users = await new PostgresTableSource(this.postgresClient, 'users', this.realtimeClient)
+        await this.postgresClient.query(`
+            UPDATE "users"
+            SET "name" = 'omarys'
+            WHERE "id" = 1;
+        `)
+        let updatedUsers = _.cloneDeep(_initialUsers)
+        updatedUsers[1]["name"] = 'omarys'
+        await expectNodeToEmit(users, updatedUsers)
+    })
+
+    it('Data deletion', async function () {
+        const users = await new PostgresTableSource(this.postgresClient, 'users', this.realtimeClient)
+        await this.postgresClient.query(`
+            DELETE FROM "users"
+            WHERE "id" = 1;
+        `)
+        let updatedUsers: Array<any> = _.cloneDeep(_initialUsers)
+        _.pullAt(updatedUsers, [1])
+        await expectNodeToEmit(users, updatedUsers)
+    })
+})

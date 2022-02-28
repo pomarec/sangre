@@ -52,42 +52,30 @@ export class PostgresTableSource extends ListSource<Object> {
                     convertChangeData(columns, record)
                 ),
             )
-            //   channel.on(
-            //     'UPDATE',
-            //     (payload, {ref}) {
-            //       final typedOldRow = convertChangeData(
-            //         (payload['columns'] as List).cast<Map<String, dynamic>>(),
-            //         payload['old_record'],
-            //       );
-            //       final typedNewRow = convertChangeData(
-            //         (payload['columns'] as List).cast<Map<String, dynamic>>(),
-            //         payload['record'],
-            //       );
-            //       updateRows(
-            //         (row) => row['id'] == typedOldRow['id'] ? typedNewRow : row,
-            //       );
-            //     },
-            //   );
-            //   channel.on(
-            //     'DELETE',
-            //     (payload, {ref}) {
-            //       final typedRow = convertChangeData(
-            //         (payload['columns'] as List).cast<Map<String, dynamic>>(),
-            //         payload['old_record'],
-            //       );
-
-            //       // Avoid removing every rows that look like the deleted one
-            //       var hasDeletedARow = false;
-            //       updateRows((row) {
-            //         if (!hasDeletedARow &&
-            //             row.entries.every((e) => typedRow[e.key] == e.value)) {
-            //           hasDeletedARow = true;
-            //           return null;
-            //         } else
-            //           return row;
-            //       });
-            //     },
-            //   );
+            channel.on(
+                'UPDATE',
+                ({ columns, record, old_record }: { columns: any, record: any, old_record: any }) => {
+                    const typedNewRecord = convertChangeData(columns, record)
+                    const typedOldRecord = convertChangeData(columns, old_record)
+                    this.updateRows((row: any) =>
+                        row['id'] === typedOldRecord['id'] ? typedNewRecord : row,
+                    )
+                },
+            )
+            channel.on(
+                'DELETE',
+                ({ columns, old_record }: { columns: any, record: any, old_record: any }) => {
+                    const typedOldRecord = convertChangeData(columns, old_record)
+                    let hasDeletedARow = false
+                    this.updateRows((row: any) => {
+                        if (!hasDeletedARow && _.isEqual(typedOldRecord, row)) {
+                            hasDeletedARow = true
+                            return null
+                        } else
+                            return row
+                    })
+                },
+            )
             channel.subscribe()
 
             // Wait for channel to be joined
