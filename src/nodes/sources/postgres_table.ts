@@ -17,6 +17,7 @@ export class PostgresTableSource extends ListSource<Object> {
         this.postgresClient = postgresClient
         this.tableName = tableName
         this.realtimeClient = realtimeClient
+        this.nodeId = `${this.nodeId}(${this.tableName})`
         appendAsyncConstructor(this, async () => {
             await this.fetchResults()
             if (_.isNil(this.realtimeClient))

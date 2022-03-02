@@ -121,7 +121,7 @@
   resolved "https://registry.yarnpkg.com/@types/cookiejar/-/cookiejar-2.1.2.tgz#66ad9331f63fe8a3d3d9d8c6e3906dd10f6446e8"
   integrity sha512-t73xJJrvdTjXrn4jLS9VSGRbz0nUY3cl2DMGDU48lKl+HR9dbbjW2A9r3g40VA++mQpy6uuHg33gy7du2BKpog==
 
-"@types/express-serve-static-core@^4.17.18":
+"@types/express-serve-static-core@*", "@types/express-serve-static-core@^4.17.18":
   version "4.17.28"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.17.28.tgz#c47def9f34ec81dc6328d0b1b5303d1ec98d86b8"
   integrity sha512-P1BJAEAW3E2DJUlkgq4tOL3RyMunoWXqbSCygWo5ZIWTjUgN1YnaXWW4VWl/oc8vs/XoYibEGBKP0uZyF4AHig==
@@ -130,7 +130,16 @@
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express@^4.17.9":
+"@types/express-ws@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@types/express-ws/-/express-ws-3.0.1.tgz#6fbf5dfdbeedd16479ccbeecbca63c14be26612e"
+  integrity sha512-VguRXzcpPBF0IggIGpUoM65cZJDfMQxoc6dKoCz1yLzcwcXW7ft60yhq3ygKhyEhEIQFtLrWjyz4AJ1qjmzCFw==
+  dependencies:
+    "@types/express" "*"
+    "@types/express-serve-static-core" "*"
+    "@types/ws" "*"
+
+"@types/express@*", "@types/express@^4.17.9":
   version "4.17.13"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.13.tgz#a76e2995728999bab51a33fabce1d705a3709034"
   integrity sha512-6bSZTPaTIACxn48l50SR+axgrqm6qXFIxrdAKaG6PaJk3+zuUr35hBlgT7vOmJcum+OEaIBLtHV/qloEAFITeA==
@@ -139,6 +148,11 @@
     "@types/express-serve-static-core" "^4.17.18"
     "@types/qs" "*"
     "@types/serve-static" "*"
+
+"@types/json8-patch@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/json8-patch/-/json8-patch-1.0.0.tgz#a8cf85bf2a2eb74157828b7bf04afbd9ee327592"
+  integrity sha512-I+aDi4gp0YaamM451gyaNm9Lff1jDD8CL8eDz6PjpkOqoosN4vI48gXlNJFXr8R8khF4LRcKiLssV6KKWy3yjg==
 
 "@types/lodash@^4.14.167":
   version "4.14.178"
@@ -204,6 +218,13 @@
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@types/websocket/-/websocket-1.0.5.tgz#3fb80ed8e07f88e51961211cd3682a3a4a81569c"
   integrity sha512-NbsqiNX9CnEfC1Z0Vf4mE1SgAJ07JnRYcNex7AJ9zAVzmiGHmjKFEk7O4TJIsgv2B1sLEb6owKFZrACwdYngsQ==
+  dependencies:
+    "@types/node" "*"
+
+"@types/ws@*", "@types/ws@^8.5.2":
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.2.tgz#77e0c2e360e9579da930ffcfa53c5975ea3bdd26"
+  integrity sha512-VXI82ykONr5tacHEojnErTQk+KQSoYbW1NB6iz6wUwrNd+BqfkfggQNoNdCqhJSzbNumShPERbM+Pc5zpfhlbw==
   dependencies:
     "@types/node" "*"
 
@@ -792,6 +813,13 @@ eventemitter3@^4.0.7:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
 
+express-ws@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/express-ws/-/express-ws-5.0.2.tgz#5b02d41b937d05199c6c266d7cc931c823bda8eb"
+  integrity sha512-0uvmuk61O9HXgLhGl3QhNSEtRsQevtmbL94/eILaliEADZBHZOQUAiHFrGPrgsjikohyrmSG5g+sCfASTt0lkQ==
+  dependencies:
+    ws "^7.4.6"
+
 express@^4.17.1:
   version "4.17.2"
   resolved "https://registry.yarnpkg.com/express/-/express-4.17.2.tgz#c18369f265297319beed4e5558753cc8c1364cb3"
@@ -1270,6 +1298,24 @@ json-buffer@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
+
+json8-patch@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/json8-patch/-/json8-patch-1.0.6.tgz#4824633e8f34e1d479a41d47cbc0c5074697625d"
+  integrity sha512-x0epce36M+8nWjGjmkd7fiGvEEhAiufIIb9vqjvS0JrskCz6RcD/a4hm+IV5fAV++lhquLIhV7vZK9tYu5+joA==
+  dependencies:
+    json8 "^1.0.5"
+    json8-pointer "^1.0.6"
+
+json8-pointer@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/json8-pointer/-/json8-pointer-1.0.6.tgz#f3f711750c5d19045943b6469877b0399a80e2e7"
+  integrity sha512-NjuxOsoxD8kidrifqywJYbCpBBMoT+4mruCVSh/BiInhBqSFnuqrJ+BnfBq0o0DxWOsAcn1J011t2JmHtA796Q==
+
+json8@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/json8/-/json8-1.0.5.tgz#a3fc51e5406489632eb87a85dbe6cbb8c200c1be"
+  integrity sha512-TnyzPW+84OwR9znGJ1DeJkucxkCEP37vNLoPuK7p0VJ3MrjhxgW+t+AbkW9vfNzxMv0tIDvzOYS1rJ7eUdcTwA==
 
 justypes@^0.1.6:
   version "0.1.6"
@@ -2248,6 +2294,16 @@ write-file-atomic@^3.0.0:
     is-typedarray "^1.0.0"
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
+
+ws@^7.4.6:
+  version "7.5.7"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.7.tgz#9e0ac77ee50af70d58326ecff7e85eb3fa375e67"
+  integrity sha512-KMvVuFzpKBuiIXW3E4u3mySRO2/mCHSyZDJQM5NQ9Q9KHWHWh0NHgfbRMLLrceUK5qAL4ytALJbpRMjixFZh8A==
+
+ws@^8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.5.0.tgz#bfb4be96600757fe5382de12c670dab984a1ed4f"
+  integrity sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==
 
 xdg-basedir@^4.0.0:
   version "4.0.0"
