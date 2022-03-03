@@ -1,6 +1,7 @@
 export * from './express'
 export * from './nodes/node'
 export * from './nodes/operators/diffed'
+export * from './nodes/operators/get'
 export * from './nodes/operators/join_many_to_many'
 export * from './nodes/operators/join_one_to_one'
 export * from './nodes/operators/logger'

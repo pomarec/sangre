@@ -5,7 +5,7 @@ import express from 'express'
 import expressWs from 'express-ws'
 import _ from 'lodash'
 import { Client } from 'pg'
-import { expressSangre, JoinManyToMany, NodeOperator1Input, NodeOperator1InputInterval } from '../src'
+import { expressSangre, JoinManyToMany, NodeGetOperator, NodeOperator1InputInterval } from '../src'
 import { PostgresTableSource } from '../src/nodes/sources/postgres_table'
 
 async function main() {
@@ -30,8 +30,7 @@ async function main() {
     const placesNode = await new PostgresTableSource(postgresClient, 'places', realtimeClient)
     const placesFollowedsNode = await new PostgresTableSource(postgresClient, 'users_places', realtimeClient)
 
-    const chain = await new NodeOperator1Input(
-        (users: Array<any>) => _.find(users, (u) => u["id"] == 1),
+    const chain = await new NodeGetOperator(
         await new JoinManyToMany(
             usersNode,
             'id',
@@ -57,7 +56,8 @@ async function main() {
             ),
             'id',
             'followeds'
-        )
+        ),
+        { id: 1 }
     )
 
     const app = expressWs(express()).app
