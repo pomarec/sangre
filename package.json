@@ -5,7 +5,8 @@
     "license": "GPLv3",
     "scripts": {
         "test": "mocha -r ts-node/register test/index.test.ts \"test/**/*.test.ts\"",
-        "test:debug": "nodemon --watch ./ -e ts --exec \"mocha --parallel=1 --inspect=0.0.0.0:9229 -r ts-node/register test/index.test.ts \\\"test/**/*.test.ts\\\"\""
+        "test:debug": "nodemon --watch ./ -e ts --exec \"mocha --parallel=1 --inspect=0.0.0.0:9229 -r ts-node/register test/index.test.ts \\\"test/**/*.test.ts\\\"\"",
+        "example:server": "nodemon --watch ./ -e ts --exec \"node -r ts-node/register example/server.ts\""
     },
     "dependencies": {
         "@supabase/realtime-js": "^1.3.6",

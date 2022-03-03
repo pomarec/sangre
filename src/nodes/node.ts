@@ -30,7 +30,7 @@ export abstract class Node<Output> {
     protected isClosed = false
     private observers = new Map<string, Observer<Output>>()
     private inputsSubscriptions = new Set<Subscription>()
-    private executionQueue = new SerialExecutionQueue()
+    protected executionQueue = new SerialExecutionQueue()
 
     constructor() {
         this.nodeId = this.constructor.name

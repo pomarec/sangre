@@ -52,9 +52,13 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
 
   Stream<Map<String, dynamic>> _buildUsersStream() =>
       WebSocketChannel.connect(Uri.parse(
-        'ws://127.0.0.1:3000/ws/followeds-diffed?from=${usersDiffedStream.valueOrNull?['revision'] ?? 0}',
+        'ws://127.0.0.1:3000/ws/followeds-diffed-${usersDiffedStream.valueOrNull?['revision'] ?? 0}',
       ))
           .stream
+          // .map((e) {
+          //   print(e);
+          //   return e;
+          // })
           .cast<String>()
           .map(json.decode)
           .foldStream<Map<String, dynamic>>(
