@@ -86,6 +86,7 @@ describe("Express api server", async function () {
         const diffs = await _takeFromWS(wsc, 2)
         expect(JSON.parse(diffs[0])).to.be.deep.eq({
             "revision": 1,
+            "from": 0,
             "diffs": [{
                 "op": "replace",
                 "path": "",
@@ -97,6 +98,7 @@ describe("Express api server", async function () {
         })
         expect(JSON.parse(diffs[1])).to.be.deep.eq({
             "revision": 2,
+            "from": 1,
             "diffs": [{
                 "op": "replace",
                 "path": "",

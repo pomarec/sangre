@@ -7,16 +7,16 @@ export class ListSource<Row> extends Node<Array<Row>> {
         this.setRows([...(this.value || []), row])
     }
 
-    setRows(rows: Array<Row>) {
-        // console.log("ListSource.setRows " + JSON.stringify(rows))
-        this.emit([...rows])
-    }
-
     updateRows(map: ((_: Row) => Row | undefined)) {
         this.setRows(
             ([...(this.value || [])].map(map) as Array<Row | undefined>).filter(
                 (e) => !_.isNil(e)
             ) as Array<Row>
         )
+    }
+
+    setRows(rows: Array<Row>) {
+        // console.log("ListSource.setRows " + JSON.stringify(rows))
+        this.emit([...rows])
     }
 }

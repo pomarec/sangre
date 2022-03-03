@@ -27,6 +27,11 @@ export class PostgresTableSource extends ListSource<Object> {
         })
     }
 
+    async close() {
+        this.realtimeChannel?.unsubscribe()
+        await super.close()
+    }
+
     private async fetchResults() {
         const { rows } = await this.postgresClient.query(
             `SELECT * FROM ${this.tableName}`,

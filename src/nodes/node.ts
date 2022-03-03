@@ -3,8 +3,9 @@ import _ from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import { SerialExecutionQueue } from '../utils'
 
-/// Throw this exception in process() when you don't want to
-/// react to the new input.
+/** Throw this exception in process() when you don't want to
+  * react to the new input.
+  */
 class NodeSkipProcess extends Error {
     constructor(m: string) {
         super(m)
@@ -20,8 +21,9 @@ interface Subscription {
     unsubscribe(): void
 }
 
-/// Any node, especially sources, have to seed their stream with
-/// at least one value before the end of init().
+/** Any node, especially sources, have to seed their stream with
+  * at least one value before the end of init().
+  */
 export abstract class Node<Output> {
     nodeId: string
     value?: Output
@@ -98,8 +100,8 @@ export abstract class Node<Output> {
 
     // Utils
 
-    /// Return the next "length" values emited by this node
-    async take(length: number): Promise<Array<Output>> {
+    /** Return the next "length" values emited by this node */
+    async take(length: number, skipCurrentValue = true): Promise<Array<Output>> {
         return new Promise((resolve) => {
             var emittedValues = new Array<Output>()
             const subscription = this.subscribe({
@@ -110,7 +112,7 @@ export abstract class Node<Output> {
                         resolve(emittedValues)
                     }
                 }
-            }, true)
+            }, skipCurrentValue)
         })
     }
 }

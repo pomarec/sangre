@@ -3,7 +3,6 @@ import _ from 'lodash'
 import { delayed } from '../..'
 import { ListSource } from './list'
 
-
 export class GrowingListSource extends ListSource<number> {
     readonly limit: number
     readonly intervalInMs: number = 100
