@@ -1,40 +1,43 @@
 
 import { RealtimeClient } from '@supabase/realtime-js'
+import { expect } from 'chai'
 import { randomInt } from 'crypto'
-import express from 'express'
-import expressWs from 'express-ws'
+import { describe } from 'mocha'
 import { Client } from 'pg'
 import { Env } from '../env'
-import { expressSangre } from '../src'
 import { DB } from '../src/functionnal'
 
-async function main() {
-    const { app, postgresClient } = await setupApp()
+describe("Functionnal", async function () {
+    beforeEach(async function () {
+        this.postgresClient = new Client(Env.postgresUri)
+        await this.postgresClient.connect()
+        await this.postgresClient.query(_sql)
 
-    const users = await DB.table('users').get({ id: 1 }).joinMany('followed',
-        await DB.table('users').joinMany('place',
-            await DB.table('places').forEachEach(
-                (p: any) => p["occupation"] = randomInt(5)
+        this.realtimeClient = new RealtimeClient(Env.realtimeUri)
+        await this.realtimeClient.connect()
+
+        DB.configure(this.postgresClient, this.realtimeClient)
+    })
+
+    afterEach(async function () {
+        await this.postgresClient.end()
+        await this.realtimeClient.disconnect()
+    })
+
+    it('Query', async function () {
+        var chain =
+            await DB.table('users').get({ id: 1 }).joinMany('followed',
+                await DB.table('users').joinMany('place',
+                    await DB.table('places').forEachEach(
+                        (p: any) => p["occupation"] = randomInt(5)
+                    ),
+                ),
             )
-        )
-    )
 
-    await expressSangre(app, '/followeds', users, postgresClient)
-
-    app.get('/unfollow', async (req, res) => {
-        const id = req.query['id']
-        await postgresClient.query(`
-          DELETE FROM "users_followeds" WHERE "followed_id" = ${id};
-        `)
-        res.end()
+        const data = await chain.take(1, false)
+        expect(data[0]["followeds"][1]["places"][0]).to.include({ "id": 1, "name": "La Cuisinerie" })
     })
-
-    app.listen(3000, () => {
-        console.log(`Server listening on port 3000`)
-    })
-}
-
-main().catch((e) => console.error(e))
+})
 
 const _sql = `
     DROP TABLE IF EXISTS "users";
@@ -91,18 +94,3 @@ const _sql = `
     (4, 5),
     (1, 5);
 `
-
-async function setupApp() {
-    const postgresClient = new Client(Env.postgresUri)
-    await postgresClient.connect()
-    await postgresClient.query(_sql)
-
-    const realtimeClient = new RealtimeClient(Env.realtimeUri)
-    await realtimeClient.connect()
-
-    DB.configure(postgresClient, realtimeClient)
-
-    const app = expressWs(express()).app
-
-    return { app, postgresClient }
-}

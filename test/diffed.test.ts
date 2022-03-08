@@ -1,18 +1,23 @@
 import { expect } from 'chai'
 import { describe } from 'mocha'
 import { Client } from 'pg'
+import { Env } from '../env'
 import { delayed, Diffed, ListSource } from '../src'
 import { expectNodeToEmitInOrder } from './index.test'
 
 describe("Diffed", async function () {
     beforeEach(async function () {
-        const postgresClient = new Client('postgresql://postgres:example@localhost:5432/postgres')
-        await postgresClient.connect()
+        this.postgresClient = new Client(Env.postgresUri)
+        await this.postgresClient.connect()
 
         this.usersNode = await new ListSource<any>()
         this.usersNode.setRows(_users)
 
-        this.diffedNode = await new Diffed(this.usersNode, postgresClient)
+        this.diffedNode = await new Diffed(this.usersNode, this.postgresClient)
+    })
+
+    afterEach(async function () {
+        await this.postgresClient.end()
     })
 
     it('Get diff when updating source', async function () {

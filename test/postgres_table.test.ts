@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import _ from 'lodash'
 import { describe } from 'mocha'
 import { Client } from 'pg'
+import { Env } from '../env'
 import { PostgresTableSource } from '../src/index'
 import { expectNodeToEmit } from './index.test'
 
@@ -14,7 +15,7 @@ const _initialUsers = [
 
 describe("Postgres table", async function () {
     beforeEach(async function () {
-        this.postgresClient = new Client('postgresql://postgres:example@localhost:5432/postgres')
+        this.postgresClient = new Client(Env.postgresUri)
         await this.postgresClient.connect()
         const sql = `
             DROP TABLE IF EXISTS "users";
@@ -31,13 +32,19 @@ describe("Postgres table", async function () {
         `
         await this.postgresClient.query(sql)
 
-        this.realtimeClient = new RealtimeClient('ws://localhost:4000/socket')
+        this.realtimeClient = new RealtimeClient(Env.realtimeUri)
         await this.realtimeClient.connect()
+    })
+
+    afterEach(async function () {
+        await this.postgresClient.end()
+        await this.realtimeClient.disconnect()
     })
 
     it('Initial data fetch', async function () {
         const users = await new PostgresTableSource(this.postgresClient, 'users')
         expect(users.value).to.be.deep.equal(_initialUsers)
+        await users.close()
     })
 
     it('Data insert', async function () {
@@ -60,12 +67,16 @@ describe("Postgres table", async function () {
             INSERT INTO "users" ("id", "name") VALUES
             (2,	'patafouin');
         `)
-        await expectNodeToEmit(users,
-            _initialUsers.concat([{
-                'id': 2,
-                'name': 'patafouin',
-            }])
-        )
+        try {
+            await expectNodeToEmit(users,
+                _initialUsers.concat([{
+                    'id': 2,
+                    'name': 'patafouin',
+                }])
+            )
+        } finally {
+            await users.close()
+        }
     })
 
     it('Data update', async function () {

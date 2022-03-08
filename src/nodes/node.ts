@@ -33,7 +33,11 @@ export abstract class Node<Output> {
     protected executionQueue = new SerialExecutionQueue()
 
     constructor() {
-        this.nodeId = this.constructor.name
+        this.nodeId = this.nodeBaseName
+    }
+
+    get nodeBaseName() {
+        return this.constructor.name
     }
 
     subscribe(observer: Observer<Output>, skipCurrentValue = false): Subscription {
@@ -87,7 +91,7 @@ export abstract class Node<Output> {
         throw Error("Not implemented")
     }
 
-    protected async close() {
+    async close() {
         if (this.isClosed)
             throw Error("Can't close node twice")
         else {
@@ -103,16 +107,20 @@ export abstract class Node<Output> {
     /** Return the next "length" values emited by this node */
     async take(length: number, skipCurrentValue = true): Promise<Array<Output>> {
         return new Promise((resolve) => {
-            var emittedValues = new Array<Output>()
-            const subscription = this.subscribe({
-                next: (data) => {
-                    emittedValues.push(data)
-                    if (emittedValues.length >= length) {
-                        subscription.unsubscribe()
-                        resolve(emittedValues)
+            if (length == 1 && this.value != undefined && !skipCurrentValue)
+                resolve([this.value])
+            else {
+                var emittedValues = new Array<Output>()
+                const subscription = this.subscribe({
+                    next: (data) => {
+                        emittedValues.push(data)
+                        if (emittedValues.length >= length) {
+                            subscription.unsubscribe()
+                            resolve(emittedValues)
+                        }
                     }
-                }
-            }, skipCurrentValue)
+                }, skipCurrentValue)
+            }
         })
     }
 }
@@ -120,10 +128,14 @@ export abstract class Node<Output> {
 export abstract class Node1Input<I1, Output> extends Node<Output> {
     nodeI1: Node<I1>
 
+    get nodeBaseName() {
+        return "N1"
+    }
+
     constructor(nodeI1: Node<I1>) {
         super()
         this.nodeI1 = nodeI1
-        this.nodeId = `${this.constructor.name}[${nodeI1.nodeId}]`
+        this.nodeId = `${this.nodeBaseName}[${nodeI1.nodeId}]`
         appendAsyncConstructor(this, async () => {
             this.nodeI1 = await nodeI1
             await this.setupInputsProcessing([nodeI1])
@@ -144,11 +156,15 @@ export abstract class Node2Input<I1, I2, Output> extends Node<Output> {
     nodeI1: Node<I1>
     nodeI2: Node<I2>
 
+    get nodeBaseName() {
+        return "N2"
+    }
+
     constructor(nodeI1: Node<I1>, nodeI2: Node<I2>) {
         super()
         this.nodeI1 = nodeI1
         this.nodeI2 = nodeI2
-        this.nodeId = `${this.constructor.name}[${nodeI1.nodeId}, ${nodeI2.nodeId}]`
+        this.nodeId = `${this.nodeBaseName}[${nodeI1.nodeId}, ${nodeI2.nodeId}]`
         appendAsyncConstructor(this, async () => {
             this.nodeI1 = await nodeI1
             this.nodeI2 = await nodeI2
@@ -170,12 +186,16 @@ export abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
     nodeI2: Node<I2>
     nodeI3: Node<I3>
 
+    get nodeBaseName() {
+        return "N-3"
+    }
+
     constructor(nodeI1: Node<I1>, nodeI2: Node<I2>, nodeI3: Node<I3>) {
         super()
         this.nodeI1 = nodeI1
         this.nodeI2 = nodeI2
         this.nodeI3 = nodeI3
-        this.nodeId = `${this.constructor.name}[${nodeI1.nodeId}, ${nodeI2.nodeId}, , ${nodeI3.nodeId}]`
+        this.nodeId = `${this.nodeBaseName}[${nodeI1.nodeId}, ${nodeI2.nodeId}, , ${nodeI3.nodeId}]`
         appendAsyncConstructor(this, async () => {
             this.nodeI1 = await nodeI1
             this.nodeI2 = await nodeI2

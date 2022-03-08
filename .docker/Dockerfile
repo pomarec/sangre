@@ -1,8 +1,8 @@
-FROM dart:stable
+FROM node:17-alpine
 
 WORKDIR /app
 
-COPY pubspec.yaml pubspec.lock ./
-RUN dart pub get
+COPY package.json yarn.lock ./
+RUN yarn
 
 COPY . .

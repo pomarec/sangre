@@ -85,7 +85,7 @@ export class PostgresTableSource extends ListSource<Object> {
             channel.subscribe()
 
             // Wait for channel to be joined
-            let maxRetries = 5
+            let maxRetries = 10
             while (!channel.isJoined() && maxRetries-- > 0)
                 await delayed(50, () => { })
         }

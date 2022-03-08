@@ -34,7 +34,7 @@ services:
     ports:
       - 4000:4000
 
-  test: &dart
+  test: &node
     build:
       context: ../
       dockerfile: .docker/Dockerfile
@@ -44,14 +44,12 @@ services:
     environment:
       POSTGRES_SERVER: db
       REALTIME_SERVER: realtime
-    # We force serial test as they depend on the same database
-    # Somehow tests work one by one but not alltogether
-    command: dart test --concurrency=1
+    command: yarn run test
       
   example: 
-    <<: *dart
-    command: dart example/server.dart
+    <<: *node
+    command: yarn run example:server
     volumes:
-      - ../example/server.dart:/app/example/server.dart
+      - ../example/server.ts:/app/example/server.ts
     ports:
       - 3000:3000

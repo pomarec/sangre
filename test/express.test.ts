@@ -7,14 +7,15 @@ import expressWs from 'express-ws'
 import { describe } from 'mocha'
 import { Client } from 'pg'
 import ws from 'ws'
+import { Env } from '../env'
 import { delayed, expressSangre } from '../src'
 import { PostgresTableSource } from '../src/nodes/sources/postgres_table'
 
 describe("Express api server", async function () {
     beforeEach(async function () {
-        const postgresClient = new Client('postgresql://postgres:example@localhost:5432/postgres')
-        await postgresClient.connect()
-        await postgresClient.query(`
+        this.postgresClient = new Client(Env.postgresUri)
+        await this.postgresClient.connect()
+        await this.postgresClient.query(`
             DROP TABLE IF EXISTS "users";
             CREATE TABLE "public"."users" (
                 "id" integer NOT NULL,
@@ -28,18 +29,18 @@ describe("Express api server", async function () {
             (1,	'omar');
         `)
 
-        const realtimeClient = new RealtimeClient('ws://localhost:4000/socket')
-        await realtimeClient.connect()
+        this.realtimeClient = new RealtimeClient(Env.realtimeUri)
+        await this.realtimeClient.connect()
 
-        const usersNode = await new PostgresTableSource(postgresClient, 'users', realtimeClient)
+        const usersNode = await new PostgresTableSource(this.postgresClient, 'users', this.realtimeClient)
 
         const app = expressWs(express()).app
 
-        await expressSangre(app, '/users', usersNode, postgresClient)
+        await expressSangre(app, '/users', usersNode, this.postgresClient)
 
         app.get('/addUser', async (req, res) => {
             const name = req.query['name']
-            await postgresClient.query(`
+            await this.postgresClient.query(`
                 INSERT INTO "users" ("id", "name") VALUES
                 (${usersNode.value!.length}, '${name ?? 'John'}');
             `)
@@ -55,7 +56,12 @@ describe("Express api server", async function () {
     })
 
     afterEach(function (done) {
-        this.server.close(done)
+        const t = this
+        this.server.close(async function () {
+            await t.postgresClient.end()
+            await t.realtimeClient.disconnect()
+            done()
+        })
     })
 
     it('Get node data', async function () {

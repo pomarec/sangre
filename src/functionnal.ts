@@ -46,6 +46,20 @@ export class DB<T> implements Promise<Node<T>> {
         )
     }
 
+    forEach(map: (_: T) => Promise<T>): DB<T> {
+        return new DB(
+            new NodeOperator1Input(map, this.nodeSure),
+            this
+        )
+    }
+
+    forEachEach<E>(forEach: (_: E) => void): DB<T> {
+        return (this as any as DB<Array<E>>).forEach(async (array: Array<E>) => {
+            array.forEach(forEach)
+            return array
+        }) as any as DB<T>
+    }
+
     joinMany(field: string, joinedTable?: Node<any>): DB<any> {
         const idField = 'id'
         const tableSource = this.findTableSource()
