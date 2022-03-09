@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { describe } from 'mocha'
 import { Client } from 'pg'
 import { Env } from '../env'
-import { delayed, Diffed, ListSource } from '../src'
+import { ArraySource, delayed, Diffed } from '../src'
 import { expectNodeToEmitInOrder } from './index.test'
 
 describe("Diffed", async function () {
@@ -10,7 +10,7 @@ describe("Diffed", async function () {
         this.postgresClient = new Client(Env.postgresUri)
         await this.postgresClient.connect()
 
-        this.usersNode = await new ListSource<any>()
+        this.usersNode = await new ArraySource<any>()
         this.usersNode.setRows(_users)
 
         this.diffedNode = await new Diffed(this.usersNode, this.postgresClient)
@@ -21,7 +21,7 @@ describe("Diffed", async function () {
     })
 
     it('Get diff when updating source', async function () {
-        const userNode = this.usersNode as ListSource<any>
+        const userNode = this.usersNode as ArraySource<any>
         const diffedNode = this.diffedNode as Diffed<any>
         delayed(500, function () {
             userNode.insertRow({
@@ -57,10 +57,10 @@ describe("Diffed", async function () {
     })
 
     it('Get diff from an old version', async function () {
-        const userNode = this.usersNode as ListSource<any>
+        const userNode = this.usersNode as ArraySource<any>
         const diffedNode = this.diffedNode as Diffed<any>
 
-        const oldVersion = diffedNode.value!
+        const oldVersion = diffedNode.lastValue!
 
         userNode.insertRow({
             "id": 3, "name": "caramel"

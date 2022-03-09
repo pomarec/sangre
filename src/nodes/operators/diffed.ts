@@ -2,10 +2,22 @@ import { appendAsyncConstructor } from "async-constructor"
 import { diff as jsondiff, JsonPatch } from "json8-patch"
 import _ from "lodash"
 import { Client } from "pg"
-import { Node, Node1Input } from "../node"
+import { Node } from "../node"
+import { Node1Input } from "../node_input"
+
 
 type DiffedData = { revision: number, from: number, diffs: JsonPatch }
 
+/**
+ * Transforms a stream of data to a stream of diffs of this data.
+ * 
+ * It generates a new revision number on each emission of data of its input.
+ * It can also produce a diff from a given previous version.
+ * Current diff algorithm is JsonPatch, chosen for its compatibility with dart
+ * librairies. Other more efficient algorithms (myers ?) might be used in the future.
+ * Snapshots of revisions are stored in postgres, thus the need of a postgresClient 
+ * in constructor.
+ */
 export class Diffed<T> extends Node1Input<T, DiffedData> {
     private postgresClient: Client
     readonly tableName: string
@@ -50,6 +62,11 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
         }
     }
 
+    /**
+     * History table is a postgres table used to store
+     * snapshots of this node input's data and their revision.
+     * This table is mainly used by diffsFromRevision().
+     */
     private async createHistoryTable() {
         await this.postgresClient.query(`
             DROP TABLE IF EXISTS "${this.tableName}";
@@ -64,6 +81,9 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
         `)
     }
 
+    /** 
+     * Saves snapshots of current input's data in history table.
+     */
     private async saveCurrentRevision() {
         if (!_.isNil(this.lastInput))
             await this.postgresClient.query(`

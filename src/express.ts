@@ -13,7 +13,7 @@ export async function expressSangre<T>(
     postgresClient: Client): Promise<expressWs.Application> {
 
     app.get(`${path}`, async function (req, res) {
-        res.send(JSON.stringify(node.value))
+        res.send(JSON.stringify(node.lastValue))
     })
     app.ws(`/ws${path}`, function (ws: ws, req: Request) {
         const subscription = node.subscribe({

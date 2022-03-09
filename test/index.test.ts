@@ -5,11 +5,11 @@ import { Node } from '../src'
 
 chai.use(chaiHttp)
 
-export async function expectNodeToEmit<T>(node: Node<T>, value: T) {
+export async function expectNodeToEmit<T, V extends T>(node: Node<T>, value: V) {
     return expectNodeToEmitInOrder(node, [value])
 }
 
-export async function expectNodeToEmitInOrder<T>(node: Node<T>, values: Array<T>, skipCurrentValue = true): Promise<void> {
+export async function expectNodeToEmitInOrder<T, V extends T>(node: Node<T>, values: Array<V>, skipCurrentValue = true): Promise<void> {
     const results = await node.take(values.length, skipCurrentValue)
     expect(results).to.be.deep.equals(values)
 }

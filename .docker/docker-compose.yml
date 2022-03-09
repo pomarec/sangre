@@ -1,15 +1,11 @@
 version: '3.1'
 
-volumes:
-  db-data:
-
 services:
   db:
     image: postgres:14.1-alpine
     environment:
       POSTGRES_PASSWORD: example
     volumes: 
-      - db-data:/var/lib/postgresql/data
       - ./db.init.sh:/docker-entrypoint-initdb.d/db.init.sh
     ports:
       - 5432:5432

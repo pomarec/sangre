@@ -1,14 +1,14 @@
 
 import { expect } from 'chai'
 import { describe } from 'mocha'
-import { JoinManyToMany, ListSource } from '../src/index'
+import { ArraySource, JoinManyToMany } from '../src'
 
 describe("Join many to many", async function () {
     it('Join M2M node', async function () {
-        const users = await new ListSource<Object>()
+        const users = await new ArraySource<Object>()
         users.setRows(_users)
 
-        const followed = await new ListSource<Object>()
+        const followed = await new ArraySource<Object>()
         followed.setRows(_followed)
 
 
@@ -23,17 +23,17 @@ describe("Join many to many", async function () {
             'followed'
         )
 
-        expect(chain.value).to.not.be.undefined
-        expect((chain.value as any)[1]['followed'][0])
-            .to.be.deep.equal((users.value as any)[2])
+        expect(chain.lastValue).to.not.be.undefined
+        expect((chain.lastValue as any)[1]['followed'][0])
+            .to.be.deep.equal((users.lastValue as any)[2])
     })
 
 
     it('Join M2M node & source change', async function () {
-        const users = await new ListSource<Object>()
+        const users = await new ArraySource<Object>()
         users.setRows(_users)
 
-        const followed = await new ListSource<Object>()
+        const followed = await new ArraySource<Object>()
         followed.setRows(_followed)
 
 
@@ -48,7 +48,7 @@ describe("Join many to many", async function () {
             'followed'
         )
 
-        expect(chain.value).to.not.be.undefined
+        expect(chain.lastValue).to.not.be.undefined
 
         followed.insertRow({
             'user_id': 4,
@@ -57,8 +57,8 @@ describe("Join many to many", async function () {
 
         await chain.take(1)
 
-        expect((chain.value as any)[4]['followed'][1])
-            .to.be.deep.equal((users.value as any)[1])
+        expect((chain.lastValue as any)[4]['followed'][1])
+            .to.be.deep.equal((users.lastValue as any)[1])
     })
 })
 

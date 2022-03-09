@@ -42,7 +42,7 @@ describe("Express api server", async function () {
             const name = req.query['name']
             await this.postgresClient.query(`
                 INSERT INTO "users" ("id", "name") VALUES
-                (${usersNode.value!.length}, '${name ?? 'John'}');
+                (${usersNode.lastValue!.length}, '${name ?? 'John'}');
             `)
             res.end()
         })

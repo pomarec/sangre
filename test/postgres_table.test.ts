@@ -43,7 +43,7 @@ describe("Postgres table", async function () {
 
     it('Initial data fetch', async function () {
         const users = await new PostgresTableSource(this.postgresClient, 'users')
-        expect(users.value).to.be.deep.equal(_initialUsers)
+        expect(users.lastValue).to.be.deep.equal(_initialUsers)
         await users.close()
     })
 

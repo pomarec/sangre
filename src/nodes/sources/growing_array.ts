@@ -1,9 +1,12 @@
 
 import _ from 'lodash'
 import { delayed } from '../..'
-import { ListSource } from './list'
+import { ArraySource } from './array'
 
-export class GrowingListSource extends ListSource<number> {
+/**
+ * This is a dummy node that generates data.
+ */
+export class GrowingArraySource extends ArraySource<number> {
     readonly limit: number
     readonly intervalInMs: number = 100
 

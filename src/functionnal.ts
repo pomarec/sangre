@@ -3,7 +3,8 @@ import { Client } from "pg"
 import { JoinManyToMany, NodeGetOperator, NodeOperator1Input, PostgresTableSource } from "."
 import { Node } from '../src'
 
-/** This is only syntaxic sugar
+/** 
+ * This is only syntaxic sugar
  * 
  * The goal is to simplify syntax when creating chains
  * of nodes
@@ -71,7 +72,7 @@ export class DB<T> implements Promise<Node<T>> {
             const joinTablename = `${currentTableNameWihoutS}s_${field}s`
             const joinTable = new PostgresTableSource(DB.globalPostgresClient, joinTablename, DB.globalRealtimeClient)
 
-            const newNode = new JoinManyToMany<any>(
+            const newNode = new JoinManyToMany<any, any, any>(
                 this.nodeSure instanceof NodeGetOperator
                     ? new NodeOperator1Input(async (e: any) => [e], this.nodeSure)
                     : this.nodeSure as Node<any>,

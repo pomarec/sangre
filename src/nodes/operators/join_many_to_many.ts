@@ -1,39 +1,49 @@
 import _ from 'lodash'
-import { Node, Node3Input } from '../node'
+import { Node } from '../node'
+import { Node3Input } from '../node_input'
 
-export class JoinManyToMany<T>
-    extends Node3Input<Array<T>, Array<T>, Array<T>, Array<T>> {
-    /// Key of input1 items to match items from input2
-    /// Can be a string or a Function(item of input1)
-    readonly joinKey: string | ((item: T) => string)
+/**
+ * Acts like an SQL many-to-many join, based on a pivot table.
+ * 
+ * First input is the data to populate.
+ * Second input is the "pivot table" or joining table (jt).
+ * Third input is the data used for population or joined table.
+ */
+export class JoinManyToMany<I1, I2, I3>
+    extends Node3Input<Array<I1>, Array<I2>, Array<I3>, Array<I1>> {
+    /** 
+     * Key of first input's items to match items from second input.
+    */
+    readonly joinKey: string | ((item: I1) => string)
 
-    /// Key of input3 items to match with input1 joinKey
-    /// Can be a string or a Function(item of input3)
-    readonly matchingKey: string | ((item: T) => string)
+    /**  
+     * Key of third input's items to match with first input's joinKey.
+     */
+    readonly matchingKey: string | ((item: I3) => string)
 
-    /// Key of input1 items to populate with matches from input3
-    /// Can be a string or a Function(item of input1, matching items of input3)
-    readonly joinedKey: string | ((item: T, matching: Array<T>) => void)
+    /**  
+     * Key of first input's items to populate with matches from third input.
+     */
+    readonly joinedKey: string | ((item: I1, matchingItems: Array<I3>) => void)
 
-    /// Key of input2 items to match items from input1
-    /// Can be a string or a Function(item of input2)
-    readonly jtJoinKey: string | ((item: T) => string)
+    /** 
+     * Key of second input's items to match items from first input.
+     */
+    readonly jtJoinKey: string | ((item: I2) => string)
 
-    /// Value of input2 items to match items from input3
-    /// Can be a string or a Function(item of input2)
-    readonly jtValueKey: string | ((item: T) => string)
+    /**  
+     * Value of second input's items to match items from third input.
+     */
+    readonly jtValueKey: string | ((item: I2) => string)
 
-    /// node1 is the base data
-    /// node2 is the joining table (jt) or pivot
-    /// node3 is the joined data
-    constructor(nodeI1: Node<Array<T>>,
-        joinKey: string | ((item: T) => any),
-        nodeI2: Node<Array<T>>,
-        jtJoinKey: string | ((item: T) => string),
-        jtValueKey: string | ((item: T) => string),
-        nodeI3: Node<Array<T>>,
-        matchingKey: string | ((item: T) => any),
-        joinedKey?: string | ((item: T, matching: Array<T>) => void),
+    constructor(nodeI1: Node<Array<I1>>,
+        joinKey: string | ((item: I1) => any),
+        nodeI2: Node<Array<I2>>,
+        jtJoinKey: string | ((item: I2) => string),
+        jtValueKey: string | ((item: I2) => string),
+        nodeI3: Node<Array<I3>>,
+        matchingKey: string | ((item: I3) => any),
+        joinedKey?: string | ((item: I1, matching: Array<I3>) => void),
     ) {
         super(nodeI1, nodeI2, nodeI3)
         this.joinKey = joinKey
@@ -43,37 +53,37 @@ export class JoinManyToMany<T>
         this.joinedKey = joinedKey || joinKey
     }
 
-    async process(input1: Array<T>, input2: Array<T>, input3: Array<T>): Promise<Array<T>> {
+    async process(input1: Array<I1>, input2: Array<I2>, input3: Array<I3>): Promise<Array<I1>> {
         return _.cloneDeep(input1).map((input1Element) => {
             const i1Value =
                 _.isString(this.joinKey)
                     ? (input1Element as any)[this.joinKey]
-                    : (this.joinKey as ((item: T) => any))(input1Element)
+                    : (this.joinKey as ((item: I1) => any))(input1Element)
             const jtJoinedItems = _.filter(input2, (input2Element) => {
                 const i2Key =
                     _.isString(this.jtJoinKey)
                         ? (input2Element as any)[this.jtJoinKey]
-                        : (this.jtJoinKey as ((item: T) => any))(input2Element)
+                        : (this.jtJoinKey as ((item: I2) => any))(input2Element)
                 return i2Key === i1Value
             })
             const matchingItems = _.cloneDeep(_.map(jtJoinedItems, (jtJoinedItem) => {
                 const jtJoinedItemValue =
                     _.isString(this.jtValueKey)
                         ? (jtJoinedItem as any)[this.jtValueKey]
-                        : (this.jtValueKey as ((item: T) => any))(jtJoinedItem)
+                        : (this.jtValueKey as ((item: I2) => any))(jtJoinedItem)
                 return _.find(input3, (input3Element) => {
                     const input3ElementKey =
                         _.isString(this.matchingKey)
                             ? (input3Element as any)[this.matchingKey]
-                            : (this.matchingKey as ((item: T) => any))(input3Element)
+                            : (this.matchingKey as ((item: I3) => any))(input3Element)
                     return input3ElementKey === jtJoinedItemValue
-                }) as T
+                }) as I3
             }))
 
             if (_.isString(this.joinedKey))
                 (input1Element as any)[this.joinedKey] = matchingItems
             else
-                (this.joinedKey as ((item: T, matching: Array<T>) => void))(input1Element, matchingItems)
+                (this.joinedKey as ((item: I1, matching: Array<I3>) => void))(input1Element, matchingItems)
 
             return input1Element
         })

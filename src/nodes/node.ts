@@ -1,51 +1,62 @@
-import { appendAsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import { SerialExecutionQueue } from '../utils'
 
-/** Throw this exception in process() when you don't want to
-  * react to the new input.
-  */
-class NodeSkipProcess extends Error {
-    constructor(m: string) {
-        super(m)
-        Object.setPrototypeOf(this, NodeSkipProcess.prototype)
-    }
-}
-
-interface Observer<T> {
-    next(value: T): void
-}
-
-interface Subscription {
-    unsubscribe(): void
-}
-
-/** Any node, especially sources, have to seed their stream with
-  * at least one value before the end of init().
-  */
+/** 
+ * A node is the main concept of sangre. Each node is a transformation
+ * of data (aggregates, filter, mutates, etc.). Data flows from sources
+ * (ndes that emits data by themselves) through nodes forming an acyclic
+ * directed graph.
+ */
 export abstract class Node<Output> {
     nodeId: string
-    value?: Output
+
+    /** Stores the last value (output) emited */
+    lastValue?: Output
+
+    /** see: this.close() */
     protected isClosed = false
+
+    /** 
+     * Collection of observers who listen to data emitted
+     * by this node.
+     */
     private observers = new Map<string, Observer<Output>>()
+
+    /** Set of subscriptions this node holds on other nodes. */
     private inputsSubscriptions = new Set<Subscription>()
+
+    /** 
+     * Serial exectution queue of this node's transformations.
+     * Makes sure every transformations is done in the same order
+     * as inputs changes.
+     */
     protected executionQueue = new SerialExecutionQueue()
 
     constructor() {
         this.nodeId = this.nodeBaseName
     }
 
+    /**
+     * Override this methods when you want a more readable
+     * node name than its class name.
+    */
     get nodeBaseName() {
         return this.constructor.name
     }
 
-    subscribe(observer: Observer<Output>, skipCurrentValue = false): Subscription {
+    /**
+     * Registers a subscriber to this node output changes.
+     * 
+     * @param skipLastValue if false (and lastValue is not nil), `subsciber.next()`
+     * is called with lastValue before emitting changes.
+     */
+    subscribe(observer: Observer<Output>, skipLastValue = false): Subscription {
         const subscriptionId = uuidv4()
         this.observers.set(subscriptionId, observer)
-        const value = this.value
-        if (!_.isNil(value) && !skipCurrentValue)
-            observer.next(value)
+        const lastValue = this.lastValue
+        if (!_.isNil(lastValue) && !skipLastValue)
+            observer.next(lastValue)
         return {
             unsubscribe: () => {
                 this.observers.delete(subscriptionId)
@@ -53,17 +64,18 @@ export abstract class Node<Output> {
         }
     }
 
-    unsubscribe(subscriptionId: string) {
-        this.observers.delete(subscriptionId)
-    }
-
     emit(value: Output) {
-        this.value = value
+        this.lastValue = value
         this.observers.forEach((observer) =>
             observer.next(value)
         )
     }
 
+    /**
+     * In case of this node subscribing ot other nodes as inputs.
+     * This methods plug them and make sure this.processUntyped() is
+     * called each time one of its inputs emit new data.
+     */
     protected async setupInputsProcessing(inputNodes: Array<Node<any>>) {
         var inputsLastData = new Array(inputNodes.length)
         inputsLastData.fill(undefined)
@@ -87,10 +99,21 @@ export abstract class Node<Output> {
         )
     }
 
+    /**
+     * Must be overwritten if this node subscribes to other nodes.
+     * @param inputs array of data emitted by nodes setup in 
+     * this.setupInputsProcessing()
+     */
     protected async processUntyped(inputs: Array<any>): Promise<Output> {
         throw Error("Not implemented")
     }
 
+
+    /**
+     * Closes any dependancies of this node.
+     * 
+     * Eg: closing subscriptions to input nodes.
+     */
     async close() {
         if (this.isClosed)
             throw Error("Can't close node twice")
@@ -104,11 +127,13 @@ export abstract class Node<Output> {
 
     // Utils
 
-    /** Return the next "length" values emited by this node */
+    /** 
+     * Get the next "length" values emited by this node.
+     */
     async take(length: number, skipCurrentValue = true): Promise<Array<Output>> {
         return new Promise((resolve) => {
-            if (length == 1 && this.value != undefined && !skipCurrentValue)
-                resolve([this.value])
+            if (length == 1 && this.lastValue != undefined && !skipCurrentValue)
+                resolve([this.lastValue])
             else {
                 var emittedValues = new Array<Output>()
                 const subscription = this.subscribe({
@@ -125,93 +150,21 @@ export abstract class Node<Output> {
     }
 }
 
-export abstract class Node1Input<I1, Output> extends Node<Output> {
-    nodeI1: Node<I1>
-
-    get nodeBaseName() {
-        return "N1"
-    }
-
-    constructor(nodeI1: Node<I1>) {
-        super()
-        this.nodeI1 = nodeI1
-        this.nodeId = `${this.nodeBaseName}[${nodeI1.nodeId}]`
-        appendAsyncConstructor(this, async () => {
-            this.nodeI1 = await nodeI1
-            await this.setupInputsProcessing([nodeI1])
-        })
-    }
-
-    async processUntyped(inputs: Array<any>): Promise<Output> {
-        return this.process(inputs[0] as I1)
-    }
-
-    async process(input: I1): Promise<Output> {
-        throw Error("Not implemented")
+/** 
+ * Throw this exception in process() when you don't want to
+ * react to the new input.
+ */
+class NodeSkipProcess extends Error {
+    constructor(m: string) {
+        super(m)
+        Object.setPrototypeOf(this, NodeSkipProcess.prototype)
     }
 }
 
-
-export abstract class Node2Input<I1, I2, Output> extends Node<Output> {
-    nodeI1: Node<I1>
-    nodeI2: Node<I2>
-
-    get nodeBaseName() {
-        return "N2"
-    }
-
-    constructor(nodeI1: Node<I1>, nodeI2: Node<I2>) {
-        super()
-        this.nodeI1 = nodeI1
-        this.nodeI2 = nodeI2
-        this.nodeId = `${this.nodeBaseName}[${nodeI1.nodeId}, ${nodeI2.nodeId}]`
-        appendAsyncConstructor(this, async () => {
-            this.nodeI1 = await nodeI1
-            this.nodeI2 = await nodeI2
-            await this.setupInputsProcessing([nodeI1, nodeI2])
-        })
-    }
-
-    async processUntyped(inputs: Array<any>): Promise<Output> {
-        return this.process(inputs[0] as I1, inputs[1] as I2)
-    }
-
-    async process(i1: I1, i2: I2): Promise<Output> {
-        throw Error("Not implemented")
-    }
+interface Observer<T> {
+    next(value: T): void
 }
 
-export abstract class Node3Input<I1, I2, I3, Output> extends Node<Output> {
-    nodeI1: Node<I1>
-    nodeI2: Node<I2>
-    nodeI3: Node<I3>
-
-    get nodeBaseName() {
-        return "N-3"
-    }
-
-    constructor(nodeI1: Node<I1>, nodeI2: Node<I2>, nodeI3: Node<I3>) {
-        super()
-        this.nodeI1 = nodeI1
-        this.nodeI2 = nodeI2
-        this.nodeI3 = nodeI3
-        this.nodeId = `${this.nodeBaseName}[${nodeI1.nodeId}, ${nodeI2.nodeId}, , ${nodeI3.nodeId}]`
-        appendAsyncConstructor(this, async () => {
-            this.nodeI1 = await nodeI1
-            this.nodeI2 = await nodeI2
-            this.nodeI3 = await nodeI3
-            await this.setupInputsProcessing([nodeI1, nodeI2, nodeI3])
-        })
-    }
-
-    async processUntyped(inputs: Array<any>): Promise<Output> {
-        return this.process(inputs[0] as I1, inputs[1] as I2, inputs[2] as I3)
-    }
-
-    async process(i1: I1, i2: I2, i3: I3): Promise<Output> {
-        throw Error("Not implemented")
-    }
+interface Subscription {
+    unsubscribe(): void
 }
-
-
-
