@@ -20,8 +20,8 @@ Sangre lives with your current backend framework (expressjs, django, rails, etc.
 
 ![Generic badge](https://img.shields.io/static/v1?label=Status&message=Proof%20Of%20Concept&color=orange&style=flat)
 ![Generic badge](https://img.shields.io/static/v1?label=Licence&message=GPLv3&color=green&style=flat)
+![Tests](https://github.com/pomarec/sangre/actions/workflows/test.yml/badge.svg?branch=typescript)
 ![Generic badge](https://img.shields.io/static/v1?label=Contact&message=po@marec.me&color=blue&style=flat)
-
 
 </div>
 

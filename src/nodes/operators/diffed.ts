@@ -1,4 +1,3 @@
-import { appendAsyncConstructor } from "async-constructor"
 import { diff as jsondiff, JsonPatch } from "json8-patch"
 import _ from "lodash"
 import { Client } from "pg"
@@ -23,15 +22,21 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
     readonly tableName: string
     revision = 0
     lastInput?: T
+    historyTableCreated = false
 
     constructor(nodeI1: Node<T>, postgresClient: Client) {
         super(nodeI1)
         this.postgresClient = postgresClient
-        this.tableName = "sangre_nodes_diff_history"
-        appendAsyncConstructor(this, this.createHistoryTable)
+        this.tableName = `sangre_nodes_diff_history`
+        // this.createHistoryTable() is called in this.process()
     }
 
     async process(input: T): Promise<DiffedData> {
+        // It used to be in this async constructor but
+        // process() is called before (when calling super's constructor)
+        if (!this.historyTableCreated)
+            await this.createHistoryTable()
+
         const diffs = jsondiff(this.lastInput ?? "", input)
         this.lastInput = input
         this.revision++
@@ -69,7 +74,7 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
      */
     private async createHistoryTable() {
         await this.postgresClient.query(`
-            DROP TABLE IF EXISTS "${this.tableName}";
+            DROP TABLE  "${this.tableName}";
 
             CREATE TABLE "${this.tableName}" (
                 "id" VARCHAR(255) NOT NULL,

@@ -26,7 +26,7 @@ services:
     environment:
       DB_HOST: db
       DB_PASSWORD: example
-      SECURE_CHANNELS: false
+      SECURE_CHANNELS: "false"
     ports:
       - 4000:4000
 
