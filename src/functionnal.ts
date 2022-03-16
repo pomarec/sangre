@@ -61,9 +61,14 @@ export class DB<T> implements Promise<Node<T>> {
         }) as any as DB<T>
     }
 
-    joinMany(field: string, joinedTable?: Node<any>): DB<any> {
+    joinMany(field: string, joinedTable?: Node<Array<any>> | string): DB<any> {
         const idField = 'id'
         const tableSource = this.findTableSource()
+        const joinedTableNode =
+            (((typeof joinedTable === "string")
+                ? DB.table(joinedTable as string).nodeSure
+                : joinedTable as Node<Array<any>>))
+            || tableSource
         if (tableSource == undefined)
             throw Error("Can't retrieve table source")
         else {
@@ -80,7 +85,7 @@ export class DB<T> implements Promise<Node<T>> {
                 joinTable,
                 `${currentTableNameWihoutS}_${idField}`,
                 `${field}_${idField}`,
-                joinedTable || tableSource,
+                joinedTableNode,
                 idField,
                 `${field}s`
             )
