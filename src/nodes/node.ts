@@ -130,7 +130,7 @@ export abstract class Node<Output> {
     /** 
      * Get the next "length" values emited by this node.
      */
-    async take(length: number, skipCurrentValue = true): Promise<Array<Output>> {
+    take(length: number, skipCurrentValue = true): Promise<Array<Output>> {
         return new Promise((resolve) => {
             if (length == 1 && this.lastValue != undefined && !skipCurrentValue)
                 resolve([this.lastValue])
@@ -147,6 +147,11 @@ export abstract class Node<Output> {
                 }, skipCurrentValue)
             }
         })
+    }
+
+    /** Shortcut to take(1) **/
+    async takeValue(skipCurrentValue?: boolean): Promise<Output> {
+        return (await this.take(1, skipCurrentValue))[0]
     }
 }
 
