@@ -1,3 +1,4 @@
+import { AsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import { SerialExecutionQueue } from '../utils'
@@ -8,7 +9,7 @@ import { SerialExecutionQueue } from '../utils'
  * (ndes that emits data by themselves) through nodes forming an acyclic
  * directed graph.
  */
-export abstract class Node<Output> {
+export abstract class Node<Output> extends AsyncConstructor {
     nodeId: string
 
     /** Stores the last value (output) emited */
@@ -34,6 +35,7 @@ export abstract class Node<Output> {
     protected executionQueue = new SerialExecutionQueue()
 
     constructor() {
+        super(async () => { })
         this.nodeId = this.nodeBaseName
     }
 
@@ -159,7 +161,7 @@ export abstract class Node<Output> {
  * Throw this exception in process() when you don't want to
  * react to the new input.
  */
-class NodeSkipProcess extends Error {
+export class NodeSkipProcess extends Error {
     constructor(m: string) {
         super(m)
         Object.setPrototypeOf(this, NodeSkipProcess.prototype)
