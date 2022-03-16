@@ -27,8 +27,9 @@ Sangre lives with your current backend framework.
 
 # Example
 
-This example is based on js but feel free to imagine it in your own language (see [Limitations](#limitations).
-It showcases a user that has a list of other followed users. Each of those users have bookmarked places (restaurants, bars, etc.).
+This example is based on typescript/javascript but feel free to imagine it in your own language (see [Limitations](#limitations)).
+
+It showcases a user that has a list of followed users. Each of those users have bookmarked places (restaurants, bars, etc.).
 
 ```typescript
 async function main() {

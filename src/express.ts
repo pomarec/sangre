@@ -6,6 +6,10 @@ import ws from 'ws'
 import { Node } from './nodes/node'
 import { Diffed } from './nodes/operators/diffed'
 
+/**
+ * Adds an express route exposing a node through
+ * a `websocket` endpoint and a `GET` endpoint.
+ */
 export async function expressSangre<T>(
     app: expressWs.Application,
     path: string,
