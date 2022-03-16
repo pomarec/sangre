@@ -90,8 +90,13 @@ export abstract class Node<Output> extends AsyncConstructor {
                             const inputs = _.clone(inputsLastData)
                             this.executionQueue.queue(
                                 async () => {
-                                    const output = await this.processUntyped(inputs)
-                                    this.emit(output)
+                                    try {
+                                        const output = await this.processUntyped(inputs)
+                                        this.emit(output)
+                                    } catch (e) {
+                                        if (!(e instanceof NodeSkipProcess))
+                                            throw e
+                                    }
                                 }
                             )
                         }
