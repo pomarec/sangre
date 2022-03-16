@@ -1,4 +1,5 @@
 import { appendAsyncConstructor } from 'async-constructor'
+import { Client } from 'pg'
 import { Node } from './node'
 
 /**
@@ -8,7 +9,11 @@ export abstract class Node1Input<Input1, Output> extends Node<Output> {
     nodeInput: Node<Input1>
 
     get nodeBaseName() {
-        return "N1"
+        return "N1I"
+    }
+
+    get parentPostgresClient(): Client | undefined {
+        return this.nodeInput.parentPostgresClient
     }
 
     constructor(nodeInput: Node<Input1>) {
@@ -42,7 +47,11 @@ export abstract class Node2Input<Input1, Input2, Output> extends Node<Output> {
     nodeInput2: Node<Input2>
 
     get nodeBaseName() {
-        return "N2"
+        return "N2I"
+    }
+
+    get parentPostgresClient(): Client | undefined {
+        return this.nodeInput1.parentPostgresClient
     }
 
     constructor(nodeInput1: Node<Input1>, nodeInput2: Node<Input2>) {
@@ -75,7 +84,11 @@ export abstract class Node3Input<Input1, Input2, Input3, Output> extends Node<Ou
     nodeInput3: Node<Input3>
 
     get nodeBaseName() {
-        return "N-3"
+        return "N3I"
+    }
+
+    get parentPostgresClient(): Client | undefined {
+        return this.nodeInput1.parentPostgresClient
     }
 
     constructor(nodeInput1: Node<Input1>, nodeInput2: Node<Input2>, nodeInput3: Node<Input3>) {

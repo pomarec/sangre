@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { describe } from 'mocha'
 import { Client } from 'pg'
 import { Env } from '../env'
-import { ArraySource, delayed, Diffed } from '../src'
+import { ArraySource, delayed, Diffed, PostgresTableSource } from '../src'
 import { expectNodeToEmitInOrder } from './index.test'
 
 describe("Diffed", async function () {
@@ -93,6 +93,20 @@ describe("Diffed", async function () {
                 ]
             }]
         })
+    })
+
+    it('Retrieve postgres client from parent node', async function () {
+        await this.postgresClient.query(`
+            DROP TABLE IF EXISTS "users";
+            CREATE TABLE "public"."users" (
+                "id" integer NOT NULL,
+                "name" character varying NOT NULL
+            ) WITH (oids = false);
+        `)
+        const users = await new PostgresTableSource(this.postgresClient, 'users')
+        const diffedNode = await new Diffed(users)
+
+        expect(diffedNode.parentPostgresClient).to.equals(this.postgresClient)
     })
 })
 

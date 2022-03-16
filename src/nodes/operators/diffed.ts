@@ -23,11 +23,15 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
     lastInput?: T
     historyTableCreated = false
 
-    constructor(nodeI1: Node<T>, postgresClient: Client) {
+    constructor(nodeI1: Node<T>, postgresClient?: Client) {
         super(nodeI1)
-        this.postgresClient = postgresClient
+        this.postgresClient = (postgresClient || this.parentPostgresClient) as Client
         this.tableName = `sangre_nodes_diff_history`
         // this.createHistoryTable() is called in this.process()
+    }
+
+    get parentPostgresClient(): Client | undefined {
+        return this.postgresClient || super.parentPostgresClient
     }
 
     async process(input: T): Promise<DiffedData> {

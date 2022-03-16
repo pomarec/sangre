@@ -36,7 +36,7 @@ describe("Express api server", async function () {
 
         const app = expressWs(express()).app
 
-        await expressSangre(app, '/users', usersNode, this.postgresClient)
+        await expressSangre(app, '/users', usersNode)
 
         app.get('/addUser', async (req, res) => {
             const name = req.query['name']

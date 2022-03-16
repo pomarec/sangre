@@ -19,7 +19,7 @@ async function main() {
         )
     )
 
-    await expressSangre(app, '/followeds', users, postgresClient)
+    await expressSangre(app, '/followeds', users)
 
     app.get('/unfollow', async (req, res) => {
         const id = req.query['id']

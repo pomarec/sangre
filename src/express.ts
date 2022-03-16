@@ -14,7 +14,7 @@ export async function expressSangre<T>(
     app: expressWs.Application,
     path: string,
     node: Node<T>,
-    postgresClient: Client): Promise<expressWs.Application> {
+    postgresClient?: Client): Promise<expressWs.Application> {
 
     app.get(`${path}`, async function (req, res) {
         res.send(JSON.stringify(await node.takeValue(false)))

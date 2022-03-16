@@ -36,6 +36,10 @@ export class PostgresTableSource extends ArraySource<Object> {
         })
     }
 
+    get parentPostgresClient(): Client | undefined {
+        return this.postgresClient
+    }
+
     async close() {
         this.realtimeChannel?.unsubscribe()
         await super.close()

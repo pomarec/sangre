@@ -1,5 +1,6 @@
 import { AsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
+import { Client } from 'pg'
 import { v4 as uuidv4 } from 'uuid'
 import { SerialExecutionQueue } from '../utils'
 
@@ -45,6 +46,13 @@ export abstract class Node<Output> extends AsyncConstructor {
     */
     get nodeBaseName() {
         return this.constructor.name
+    }
+
+    /** Helper to retrieve the first postgres `Client` in
+     * parent node hierarchy.
+     */
+    get parentPostgresClient(): Client | undefined {
+        return undefined
     }
 
     /**
