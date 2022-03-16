@@ -13,7 +13,7 @@ export async function expressSangre<T>(
     postgresClient: Client): Promise<expressWs.Application> {
 
     app.get(`${path}`, async function (req, res) {
-        res.send(JSON.stringify(node.lastValue))
+        res.send(JSON.stringify(await node.takeValue(false)))
     })
     app.ws(`/ws${path}`, function (ws: ws, req: Request) {
         const subscription = node.subscribe({
@@ -35,15 +35,20 @@ function _plugDiffed<T>(
     app: expressWs.Application,
     path: string,
     nodeDiffed: Diffed<T>,
-    fromRevision?: number) {
+    fromRevisionOpt?: number) {
 
-    const route = `/ws${path}-diffed` + (_.isNil(fromRevision) ? '' : `-${fromRevision}`)
+    const route = `/ws${path}-diffed` + (_.isNil(fromRevisionOpt) ? '' : `-${fromRevisionOpt}`)
+    const fromRevision = fromRevisionOpt || 0
     app.ws(route, async function (ws: ws, req: Request) {
-        const diffsFromLastRevision = await nodeDiffed.diffsFromRevision(fromRevision || 0)
-        ws.send(JSON.stringify(diffsFromLastRevision))
+        if (nodeDiffed.revision > fromRevision) {
+            const diffsFromLastRevision = await nodeDiffed.diffsFromRevision(fromRevision)
+            ws.send(JSON.stringify(diffsFromLastRevision))
+        }
         const subscription = nodeDiffed.subscribe({
-            next: (data) =>
-                ws.send(JSON.stringify(data))
+            next: (data) => {
+                if (data.revision > fromRevision)
+                    ws.send(JSON.stringify(data))
+            }
         }, true)
         ws.on('close', subscription.unsubscribe)
     })

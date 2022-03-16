@@ -1,9 +1,8 @@
 import { diff as jsondiff, JsonPatch } from "json8-patch"
 import _ from "lodash"
 import { Client } from "pg"
-import { Node } from "../node"
+import { Node, NodeSkipProcess } from "../node"
 import { Node1Input } from "../node_input"
-
 
 type DiffedData = { revision: number, from: number, diffs: JsonPatch }
 
@@ -38,9 +37,12 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
             await this.createHistoryTable()
 
         const diffs = jsondiff(this.lastInput ?? "", input)
+        if (diffs.length == 0)
+            throw new NodeSkipProcess("Diffed: no diff dectected since last input")
         this.lastInput = input
         this.revision++
         await this.saveCurrentRevision()
+
         return {
             revision: this.revision,
             from: this.revision - 1,
@@ -48,13 +50,13 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
         }
     }
 
-    async diffsFromRevision(previousRevision: number = 0,): Promise<DiffedData> {
+    async diffsFromRevision(previousRevision = 0): Promise<DiffedData> {
         let previousValue = ""
         if (previousRevision > 0) {
             const previousValueQuery = await this.postgresClient.query(`
                 SELECT ("snapshot") FROM "${this.tableName}" 
                 WHERE id = '${this.nodeId}' AND revision = '${previousRevision}'
-                `)
+            `)
             const snapshot = previousValueQuery.rows[0]
             if (snapshot != null)
                 previousValue = snapshot
@@ -74,7 +76,7 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
      */
     private async createHistoryTable() {
         await this.postgresClient.query(`
-            DROP TABLE  "${this.tableName}";
+            DROP TABLE IF EXISTS "${this.tableName}";
 
             CREATE TABLE "${this.tableName}" (
                 "id" VARCHAR(255) NOT NULL,

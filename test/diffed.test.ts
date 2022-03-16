@@ -60,7 +60,7 @@ describe("Diffed", async function () {
         const userNode = this.usersNode as ArraySource<any>
         const diffedNode = this.diffedNode as Diffed<any>
 
-        const oldVersion = diffedNode.lastValue!
+        const oldVersion = await diffedNode.takeValue()
 
         userNode.insertRow({
             "id": 3, "name": "caramel"
@@ -73,6 +73,9 @@ describe("Diffed", async function () {
                 row["name"] = "Jean-Louis"
             return row
         })
+
+        // Let updates propagate
+        await delayed(500, () => { })
 
         const diffs = await diffedNode.diffsFromRevision(oldVersion.revision)
         expect(diffs).to.be.deep.equal({
