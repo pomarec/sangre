@@ -12,7 +12,30 @@ void main() {
       title: 'Sangre realtime example : my friends have bookmarked places',
       theme: FlexThemeData.light(scheme: FlexScheme.redWine),
       darkTheme: FlexThemeData.dark(scheme: FlexScheme.redWine),
-      home: showDiffed ? UsersDiffedList() : UsersList(),
+      home: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Sangre client example'),
+            bottom: TabBar(
+              tabs: [
+                Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Text("Consolidated data streaming"),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Text("Diffs of data streaming"),
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(children: [
+            UsersList(),
+            UsersDiffedList(),
+          ]),
+        ),
+      ),
     ),
   );
 }

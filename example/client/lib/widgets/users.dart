@@ -55,7 +55,6 @@ class _UsersWidgetState extends State<UsersWidget> {
                         margin: EdgeInsets.all(10),
                         padding: EdgeInsets.all(10),
                         width: 185,
-                        height: 170,
                         decoration: BoxDecoration(
                           color: lightRed,
                           borderRadius: BorderRadius.circular(_radius),

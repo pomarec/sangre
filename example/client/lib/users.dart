@@ -36,20 +36,13 @@ class _UsersListState extends State<UsersList> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text('Sangre over websocket example'),
-        ),
-        body: SingleChildScrollView(
-          child: StreamBuilder(
-            stream: usersStream,
-            builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) =>
-                UsersWidget(
-              title: 'Friends',
-              users: snapshot.data?['followeds'] as List<UserType>? ?? [],
-              date: snapshot.data?['date'],
-            ),
-          ),
+  Widget build(BuildContext context) => StreamBuilder(
+        stream: usersStream,
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) =>
+            UsersWidget(
+          title: 'Friends',
+          users: snapshot.data?['followeds'] as List<UserType>? ?? [],
+          date: snapshot.data?['date'],
         ),
       );
 }

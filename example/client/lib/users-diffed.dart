@@ -22,6 +22,8 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
   final usersDiffedStream = BehaviorSubject<Map<String, dynamic>>();
   late final usersDiffedStreamAccumulated = usersDiffedStream.accumulate();
   StreamSubscription? _websocketSubscription;
+  StreamSubscription? _scrollViewSubscription;
+  final _scrollController = ScrollController();
 
   bool get isConnected => _websocketSubscription != null;
 
@@ -29,6 +31,21 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
   void initState() {
     super.initState();
     _connect();
+    _scrollViewSubscription = usersDiffedStream.listen(
+      (event) => Future.delayed(Duration(milliseconds: 100)).then(
+        (_) => _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        ),
+      ),
+    );
+  }
+
+  void dispose() {
+    _scrollViewSubscription?.cancel();
+    _disconnect();
+    super.dispose();
   }
 
   _connect() {
@@ -81,53 +98,61 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
           );
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text('Sangre diffs over websocket example'),
-        ),
-        body: SingleChildScrollView(
-          child: StreamBuilder(
-            stream: usersDiffedStreamAccumulated,
-            builder: (
-              context,
-              AsyncSnapshot snapshot,
-            ) =>
-                Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: (snapshot.data as List<Map<String, dynamic>>? ??
-                      <Map<String, dynamic>>[])
-                  .map(
-                    (e) => e['connection'] != null
-                        ? [_buildSeparator(context, true, e['date'])]
-                        : e['disconnection'] != null
-                            ? [_buildSeparator(context, false, e['date'])]
-                            : [
-                                if (e['diffs'] != null) ..._buildDiffs(e),
-                                UsersWidget(
-                                  title: 'Friends',
-                                  revision: e['revision'],
-                                  users: e['data']['followeds'],
-                                  date: DateTime.now(),
-                                ),
-                              ],
-                  )
-                  .expand((e) => e)
-                  .toList(),
+  Widget build(BuildContext context) => Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: StreamBuilder(
+                stream: usersDiffedStreamAccumulated,
+                builder: (
+                  context,
+                  AsyncSnapshot snapshot,
+                ) =>
+                    Column(
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  children: (snapshot.data as List<Map<String, dynamic>>? ??
+                          <Map<String, dynamic>>[])
+                      .map(
+                        (e) => e['connection'] != null
+                            ? [_buildSeparator(context, true, e['date'])]
+                            : e['disconnection'] != null
+                                ? [_buildSeparator(context, false, e['date'])]
+                                : [
+                                    if (e['diffs'] != null) ..._buildDiffs(e),
+                                    UsersWidget(
+                                      title: 'Friends',
+                                      revision: e['revision'],
+                                      users: e['data']['followeds'],
+                                      date: e['date'],
+                                    ),
+                                  ],
+                      )
+                      .expand((e) => e)
+                      .toList(),
+                ),
+              ),
             ),
           ),
-        ),
-        persistentFooterButtons: [
-          FloatingActionButton(
-            onPressed: () => setState(
-              () => isConnected ? _disconnect() : _connect(),
-            ),
-            tooltip: isConnected ? 'disconnect' : 'connect',
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            foregroundColor: isConnected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurface,
-            child: Icon(isConnected ? Icons.cloud_done : Icons.cloud_off),
-          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(20.0),
+                child: FloatingActionButton(
+                  onPressed: () => setState(
+                    () => isConnected ? _disconnect() : _connect(),
+                  ),
+                  tooltip: isConnected ? 'disconnect' : 'connect',
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: isConnected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
+                  child: Icon(isConnected ? Icons.cloud_done : Icons.cloud_off),
+                ),
+              )
+            ],
+          )
         ],
       );
 
@@ -140,6 +165,7 @@ class _UsersDiffedListState extends State<UsersDiffedList> {
             child: Container(
               constraints: BoxConstraints(maxHeight: 200),
               child: SingleChildScrollView(
+                controller: ScrollController(),
                 child: Text(
                   JsonEncoder.withIndent('  ').convert(e['diffs']),
                 ),
