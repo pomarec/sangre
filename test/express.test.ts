@@ -75,12 +75,14 @@ describe("Express api server", async function () {
             req.get('/addUser?name=Bruno')
         )
         const users = await _takeFromWS(wsc, 2)
-        expect(JSON.parse(users[0])).to.be.deep.eq(_users)
-        expect(JSON.parse(users[1])).to.be.deep.eq(_users.concat([{
-            'id': 2,
-            'name': 'Bruno',
-        }]))
+        expect(users).to.be.deep.eq([_users,
+            _users.concat([{
+                'id': 2,
+                'name': 'Bruno',
+            }])
+        ])
     })
+
 
     it('Get node diffed stream', async function () {
         const wsc = new ws.WebSocket(`ws://localhost:${this.server.address().port}/ws/users-diffed`)
@@ -89,8 +91,7 @@ describe("Express api server", async function () {
             req.get('/addUser?name=Bruno')
         )
         const diffs = await _takeFromWS(wsc, 2)
-        const parsedDiffs = [JSON.parse(diffs[0]), JSON.parse(diffs[1])]
-        expect(parsedDiffs).to.be.deep.eq([{
+        expect(diffs).to.be.deep.eq([{
             "revision": 1,
             "from": 0,
             "diffs": [{
@@ -127,7 +128,7 @@ function _takeFromWS(wsc: ws, count: number): Promise<Array<string>> {
     return new Promise((resolve, reject) => {
         let resp = <any>[]
         wsc.on('message', function (data) {
-            const message = data.toString()
+            const message = JSON.parse(data.toString())
             resp.push(message)
             if (resp.length >= count) {
                 wsc.close()
