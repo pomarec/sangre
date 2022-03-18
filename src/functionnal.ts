@@ -2,6 +2,7 @@ import { RealtimeClient } from "@supabase/realtime-js"
 import { Client } from "pg"
 import { JoinManyToMany, NodeGetOperator, NodeOperator1Input, PostgresTableSource } from "."
 import { Node } from '../src'
+import { NodeRepeat } from "./nodes/operators/repeat"
 
 /** 
  * This is only syntaxic sugar
@@ -47,18 +48,21 @@ export class DB<T> implements Promise<Node<T>> {
         )
     }
 
-    forEach(map: (_: T) => Promise<T>): DB<T> {
+    forEach(map: (_: T) => Promise<T>, intervalInMs?: number): DB<T> {
         return new DB(
-            new NodeOperator1Input(map, this.nodeSure),
+            new NodeOperator1Input(
+                map,
+                intervalInMs == undefined ? this.nodeSure : new NodeRepeat(this.nodeSure, intervalInMs)
+            ),
             this
         )
     }
 
-    forEachEach<E>(forEach: (_: E) => void): DB<T> {
+    forEachEach<E>(forEach: (_: E) => void, intervalInMs?: number): DB<T> {
         return (this as any as DB<Array<E>>).forEach(async (array: Array<E>) => {
             array.forEach(forEach)
             return array
-        }) as any as DB<T>
+        }, intervalInMs) as any as DB<T>
     }
 
     joinMany(field: string, joinedTable?: Node<Array<any>> | string): DB<any> {
