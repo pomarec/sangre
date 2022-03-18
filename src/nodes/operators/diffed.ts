@@ -1,10 +1,10 @@
-import { diff as jsondiff, JsonPatch } from "json8-patch"
+import * as jsonpatch from 'fast-json-patch'
 import _ from "lodash"
 import { Client } from "pg"
 import { Node, NodeSkipProcess } from "../node"
 import { Node1Input } from "../node_input"
 
-type DiffedData = { revision: number, from: number, diffs: JsonPatch }
+type DiffedData = { revision: number, from: number, diffs: Array<jsonpatch.Operation> }
 
 /**
  * Transforms a stream of data to a stream of diffs of this data.
@@ -40,7 +40,7 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
         if (!this.historyTableCreated)
             await this.createHistoryTable()
 
-        const diffs = jsondiff(this.lastInput ?? "", input)
+        const diffs = jsonpatch.compare(this.lastInput ?? "", input)
         if (diffs.length == 0)
             throw new NodeSkipProcess("Diffed: no diff dectected since last input")
         this.lastInput = input
@@ -65,7 +65,7 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
             if (snapshot != null)
                 previousValue = snapshot
         }
-        const diffs = jsondiff(previousValue, this.lastInput ?? "")
+        const diffs = jsonpatch.compare(previousValue, this.lastInput ?? "")
         return {
             revision: this.revision,
             from: previousRevision,

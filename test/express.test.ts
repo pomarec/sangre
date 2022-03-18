@@ -52,7 +52,6 @@ describe("Express api server", async function () {
                 () => resolve(server)
             )
         })
-
     })
 
     afterEach(function (done) {
@@ -90,31 +89,37 @@ describe("Express api server", async function () {
             req.get('/addUser?name=Bruno')
         )
         const diffs = await _takeFromWS(wsc, 2)
-        expect(JSON.parse(diffs[0])).to.be.deep.eq({
+        const parsedDiffs = [JSON.parse(diffs[0]), JSON.parse(diffs[1])]
+        expect(parsedDiffs).to.be.deep.eq([{
             "revision": 1,
             "from": 0,
             "diffs": [{
-                "op": "replace",
-                "path": "",
-                "value": [
-                    { "id": 0, "name": "fred" },
-                    { "id": 1, "name": "omar" }
-                ]
+                "op": "add",
+                "path": "/0",
+                "value": {
+                    "id": 0,
+                    "name": "fred"
+                }
+            }, {
+                "op": "add",
+                "path": "/1",
+                "value": {
+                    "id": 1,
+                    "name": "omar"
+                }
             }]
-        })
-        expect(JSON.parse(diffs[1])).to.be.deep.eq({
+        }, {
             "revision": 2,
             "from": 1,
             "diffs": [{
-                "op": "replace",
-                "path": "",
-                "value": [
-                    { "id": 0, "name": "fred" },
-                    { "id": 1, "name": "omar" },
-                    { "id": 2, "name": "Bruno" }
-                ]
+                "op": "add",
+                "path": "/2",
+                "value": {
+                    "id": 2,
+                    "name": "Bruno"
+                }
             }]
-        })
+        }])
     })
 })
 

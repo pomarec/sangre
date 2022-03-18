@@ -32,26 +32,37 @@ describe("Diffed", async function () {
             "revision": 1,
             "from": 0,
             "diffs": [{
-                "op": "replace",
-                "path": "",
-                "value": [
-                    { "id": 0, "name": "fred" },
-                    { "id": 1, "name": "omar" },
-                    { "id": 2, "name": "patafouin" }
-                ]
+                "op": "add",
+                "path": "/0",
+                "value": {
+                    "id": 0,
+                    "name": "fred"
+                }
+            }, {
+                "op": "add",
+                "path": "/1",
+                "value": {
+                    "id": 1,
+                    "name": "omar"
+                }
+            }, {
+                "op": "add",
+                "path": "/2",
+                "value": {
+                    "id": 2,
+                    "name": "patafouin"
+                }
             }]
         }, {
             "revision": 2,
             "from": 1,
             "diffs": [{
-                "op": "replace",
-                "path": "",
-                "value": [
-                    { "id": 0, "name": "fred" },
-                    { "id": 1, "name": "omar" },
-                    { "id": 2, "name": "patafouin" },
-                    { "id": 3, "name": "caramel" }
-                ]
+                "op": "add",
+                "path": "/3",
+                "value": {
+                    "id": 3,
+                    "name": "caramel"
+                }
             }]
         }], false)
     })
@@ -82,15 +93,25 @@ describe("Diffed", async function () {
             "revision": 3,
             "from": 1,
             "diffs": [{
-                "op": "replace",
-                "path": "",
-                "value": [
-                    { "id": 0, "name": "fred" },
-                    { "id": 1, "name": "omar" },
-                    { "id": 2, "name": "Jean-Louis" },
-                    { "id": 3, "name": "caramel" },
-                    { "id": 4, "name": "maurice" }
-                ]
+                "op": "add",
+                "path": "/0",
+                "value": { "id": 0, "name": "fred" }
+            }, {
+                "op": "add",
+                "path": "/1",
+                "value": { "id": 1, "name": "omar" }
+            }, {
+                "op": "add",
+                "path": "/2",
+                "value": { "id": 2, "name": "Jean-Louis" }
+            }, {
+                "op": "add",
+                "path": "/3",
+                "value": { "id": 3, "name": "caramel" }
+            }, {
+                "op": "add",
+                "path": "/4",
+                "value": { "id": 4, "name": "maurice" }
             }]
         })
     })
