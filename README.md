@@ -35,9 +35,9 @@ It showcases a user that has a list of followed users. Each of those users have 
 
 ```typescript
 async function main() {
-  const { app, postgresClient } = await setupApp() // expressjs, django, rails
+  const { app, postgresClient } = await setupExpressApp() // create your express app
 
-  // Setup node
+  // Create users node
   const users = await DB.table('users').get({ id: 1 }).joinMany('followed',
     await DB.table('users').joinMany('place')
   )
@@ -53,15 +53,17 @@ This exposes a websocket endpoint streaming the user (id==1) with its followed u
 
 The websocket streams the updates as this data changes in the database.
 
-See working example [here](example/).
+Below is a screencast of this example with a demonstration of its websocket output :
 
 [![Screencast of example](doc/screencast.gif "Screencast of example")](https://raw.githubusercontent.com/pomarec/sangre/main/doc/screencast.gif)
+
+Another working example is showcased with a flutter client [here](example/).
 
 # About The Project
 
 Sangre provides a generic solution for streaming complex backend queries to clients in realtime.
 
-A complex query is an arbitrary nested query of structured database data and processing of this data in your native backend language (js, python, etc.)
+A complex query is an arbitrary nested query of structured database data and processing of this data in your native backend language (js, python, etc.), only typescript/js is supported ATM.
 
 The result of such query is streamed to client using incremental updates, minimizing network load, and enabling offline sync.
 

@@ -16,14 +16,15 @@ graph LR
         NodeJoinFollowed((JoinMany<br><i>followeds</i>))
         NodeJoinPlaces((JoinMany<br><i>places</i>))
         NodeGet((Get<br><i>id == 1</i>))
+
         
         DBNodeUsers-->NodeGet-->NodeJoinFollowed
-        DBNodeUsersFollowed--->NodeJoinFollowed
         
         DBNodeUsers-->NodeJoinPlaces
         DBNodePlaces-->NodeJoinPlaces
         DBNodeUsersPlaces-->NodeJoinPlaces
         NodeJoinPlaces-->NodeJoinFollowed
+        DBNodeUsersFollowed--->NodeJoinFollowed
 
         NodeJoinFollowed-->NodeDiff((Diffed))
         end
