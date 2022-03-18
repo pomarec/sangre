@@ -11,11 +11,16 @@ import { DB } from '../src/functionnal'
 async function main() {
     const { app, postgresClient } = await setupApp()
 
+    // Get my profile, join users I follow
+    // on those users, join the places they bookmarked (followed)
+    // Plus, generate a random fake occupation number each 3sec on those places 
     const users = await DB.table('users').get({ id: 1 }).joinMany('followed',
         await DB.table('users').joinMany('place',
-            await DB.table('places').forEachEach(
-                (p: any) => p["occupation"] = randomInt(5)
-            )
+            await DB.table('places')
+                .forEachEach(
+                    (p: any) => p["occupation"] = randomInt(5),
+                    3000
+                )
         )
     )
 
