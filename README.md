@@ -11,8 +11,10 @@ Sangre **streams your backend queries in realtime** to your clients minimizing t
 
 Sangre lives with your current backend framework.
 
+[Example](#example) •
 [About The Project](#about-the-project) •
 [How it works](#how-it-works) •
+[Limitations](#limitations-poc) •
 [Installation](#installation) •
 [Contact](#contact) •
 [Acknowledgments](#acknowledgments)
@@ -27,7 +29,7 @@ Sangre lives with your current backend framework.
 
 # Example
 
-This example is based on typescript/javascript but feel free to imagine it in your own language (see [Limitations](#limitations)).
+This example is based on typescript/javascript but feel free to imagine it in your own language (see [Limitations](#limitations-poc)).
 
 It showcases a user that has a list of followed users. Each of those users have bookmarked places (restaurants, bars, etc.).
 
