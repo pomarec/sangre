@@ -7,7 +7,7 @@ import { NodeOperator1Input } from "./operators"
 export class Logger<T> extends NodeOperator1Input<T, T> {
     constructor(nodeI1: Node<T>) {
         super(async (i) => {
-            console.log(`${this.nodeBaseName} :`)
+            console.log(`${this.nodeId} :`)
             console.log(i)
             return i
         }, nodeI1)

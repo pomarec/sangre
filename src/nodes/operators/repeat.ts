@@ -24,7 +24,7 @@ export class NodeRepeat<T> extends Node1Input<T, T> {
             this.timer = setInterval(this.tick.bind(this), this.intervalInMs)
     }
 
-    async tick() {
+    private async tick() {
         const t = this
         this.executionQueue.queue(
             async () => {

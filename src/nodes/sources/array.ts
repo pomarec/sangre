@@ -7,7 +7,6 @@ import { Node } from '../node'
  */
 export class ArraySource<Row> extends Node<Array<Row>> {
     insertRow(row: Row) {
-        // console.log("ArraySource.insertRow " + JSON.stringify(row))
         this.setRows([...(this.lastValue || []), row])
     }
 
@@ -17,14 +16,13 @@ export class ArraySource<Row> extends Node<Array<Row>> {
      */
     updateRows(map: ((_: Row) => Row | undefined)) {
         this.setRows(
-            ([...(this.lastValue || [])].map(map) as Array<Row | undefined>).filter(
+            ([...(this.lastValue || [])].map(map)).filter(
                 (e) => !_.isNil(e)
-            ) as Array<Row>
+            )
         )
     }
 
     setRows(rows: Array<Row>) {
-        // console.log("ArraySource.setRows " + JSON.stringify(rows))
         this.emit([...rows])
     }
 }

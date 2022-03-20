@@ -26,7 +26,7 @@ export abstract class Node1Input<Input1, Output> extends Node<Output> {
         })
     }
 
-    async processUntyped(inputs: Array<any>): Promise<Output> {
+    processUntyped(inputs: Array<any>): Promise<Output> {
         return this.process(inputs[0] as Input1)
     }
 
@@ -66,7 +66,7 @@ export abstract class Node2Input<Input1, Input2, Output> extends Node<Output> {
         })
     }
 
-    async processUntyped(inputs: Array<any>): Promise<Output> {
+    processUntyped(inputs: Array<any>): Promise<Output> {
         return this.process(inputs[0] as Input1, inputs[1] as Input2)
     }
 
@@ -105,7 +105,7 @@ export abstract class Node3Input<Input1, Input2, Input3, Output> extends Node<Ou
         })
     }
 
-    async processUntyped(inputs: Array<any>): Promise<Output> {
+    processUntyped(inputs: Array<any>): Promise<Output> {
         return this.process(inputs[0] as Input1, inputs[1] as Input2, inputs[2] as Input3)
     }
 
