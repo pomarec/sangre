@@ -4,9 +4,9 @@ import { expect } from 'chai'
 import _ from 'lodash'
 import { describe } from 'mocha'
 import { Client } from 'pg'
-import { Env } from '../env'
-import { PostgresTableSource } from '../src/index'
-import { expectNodeToEmit } from './index.test'
+import { Env } from '../../../env'
+import { PostgresTableSource } from '../../../src/index'
+import { expectNodeToEmit } from '../../index.test'
 
 const _initialUsers = [
     { 'id': 0, 'name': 'fred' },

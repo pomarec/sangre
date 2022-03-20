@@ -1,19 +1,8 @@
 
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { delayed, GrowingArraySource, NodeOperator1Input, NodeOperator2Input } from '../src/index'
-import { expectNodeToEmitInOrder } from './index.test'
-
-describe("Sources", async function () {
-    it('Growling array source', async function () {
-        const source = await new GrowingArraySource(3)
-        await expectNodeToEmitInOrder(source, [
-            [0],
-            [0, 1],
-            [0, 1, 2],
-        ])
-    })
-})
+import { delayed, GrowingArraySource, NodeOperator1Input, NodeOperator2Input } from '../../../src/index'
+import { expectNodeToEmitInOrder } from '../../index.test'
 
 describe("Operators", async function () {
     it('Combine growing array source with count operator', async function () {

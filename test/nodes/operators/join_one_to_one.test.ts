@@ -2,7 +2,7 @@
 import { expect } from 'chai'
 import _, { uniqueId } from 'lodash'
 import { describe } from 'mocha'
-import { ArraySource, JoinOneToOne } from '../src'
+import { ArraySource, JoinOneToOne } from '../../../src'
 
 describe("Join one to one", async function () {
     it('Join node', async function () {

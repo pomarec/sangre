@@ -1,9 +1,9 @@
 import { expect } from 'chai'
 import { describe } from 'mocha'
 import { Client } from 'pg'
-import { Env } from '../env'
-import { ArraySource, delayed, Diffed, PostgresTableSource } from '../src'
-import { expectNodeToEmitInOrder } from './index.test'
+import { Env } from '../../../env'
+import { ArraySource, delayed, Diffed, PostgresTableSource } from '../../../src'
+import { expectNodeToEmitInOrder } from '../../index.test'
 
 describe("Diffed", async function () {
     beforeEach(async function () {

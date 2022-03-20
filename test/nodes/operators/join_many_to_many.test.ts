@@ -1,7 +1,7 @@
 
 import { expect } from 'chai'
 import { describe } from 'mocha'
-import { ArraySource, JoinManyToMany } from '../src'
+import { ArraySource, JoinManyToMany } from '../../../src'
 
 describe("Join many to many", async function () {
     it('Join M2M node', async function () {

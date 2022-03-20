@@ -17,10 +17,12 @@ export class NodeGetOperator<T> extends NodeOperator1Input<Array<T>, T> {
      */
     constructor(nodeI1: Node<Array<T>>, match: any) {
         super(
-            (users: Array<any>) => _.find(users,
-                (u) => _.every(_.map(_.keys(match),
-                    (k) => _.isEqual(match[k], u[k])
-                )))
+            (input: Array<any>) =>
+                _.find(input,
+                    (u) => _.every(_.map(_.keys(match),
+                        (k) => _.isEqual(match[k], u[k])
+                    ))
+                )
             , nodeI1
         )
     }
