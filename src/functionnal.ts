@@ -1,6 +1,6 @@
 import { RealtimeClient } from "@supabase/realtime-js"
 import { Client } from "pg"
-import { JoinManyToMany, NodeGetOperator, NodeOperator1Input, PostgresTableSource } from "."
+import { JoinManyToMany, NodeFilterOperator, NodeGetOperator, NodeOperator1Input, PostgresTableSource } from "."
 import { Node } from '../src'
 import { NodeRepeat } from "./nodes/operators/repeat"
 
@@ -44,6 +44,13 @@ export class DB<T> implements Promise<Node<T>> {
     get<O>(match: any): DB<O> {
         return new DB<O>(
             new NodeGetOperator<O>((this.nodeSure as any) as Node<Array<O>>, match),
+            this
+        )
+    }
+
+    filter<O>(match: any): DB<Array<O>> {
+        return new DB<Array<O>>(
+            new NodeFilterOperator<O>((this.nodeSure as any) as Node<Array<O>>, match),
             this
         )
     }
