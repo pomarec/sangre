@@ -107,7 +107,7 @@ At this point, Sangre is just a PoC. A lot of shortcuts have been taken to produ
 | Observability                                            |     ✔️      |
 | Upqueries                                                |     ✔️      |
 | Language agnostic (needs implementation in each)         |     ❌      |
-| Strict consistency                                       |     ❌      |
+| Strict consistency                                       |     ❌ (enventual only)      |
 | Parametrized queries                                     |     ✔️      |
 | Share nodes between similar queries                      |     ✔️      |
 
@@ -169,6 +169,6 @@ Project Link: [https://github.com/pomarec/sangre](https://github.com/pomarec/san
 
 - Typescript / JS librairies in [package.json](package.json)
 
-- Dart librairies in [pubspec](example/client/pubspec.yml)
+- Dart librairies in example's client's [pubspec](example/client/pubspec.yml)
 
 - <a href="https://www.flaticon.com/free-icons/blood" title="blood icons">Blood icons created by Freepik - Flaticon</a>
