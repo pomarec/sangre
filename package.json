@@ -1,8 +1,8 @@
 {
     "name": "sangre",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "description": "Sangre streams your backend queries in realtime to your clients minimizing the load via diffs.",
-    "license": "GPLv3",
+    "license": "GPL-3.0-only",
     "scripts": {
         "test": "mocha --exit -r ts-node/register test/index.test.ts \"test/**/*.test.ts\"",
         "test:debug": "nodemon --watch ./ -e ts --exec \"TS_NODE_TRANSPILE_ONLY=true mocha --inspect=0.0.0.0:9229 -r ts-node/register test/index.test.ts \\\"test/**/*.test.ts\\\"\"",

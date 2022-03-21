@@ -73,14 +73,14 @@ Sangre implements all the following features and let the developers focus on bus
 
 <div align="center">
 
-| Features                                                                   |    |
-| -------------------------------------------------------------------------- | -- |
-| Realtime processing of relational database query + abitrary transformation | ✔️ |
-| Client streaming over websocket                                            | ✔️ |
-| Offline sync for clients                                                   | ✔️ |
-| Minimal network load (incremental updates)                                 | ✔️ |
-| Can be embedded into an existing project                                   | ✔️ |
-| You need to adopt a new database                                           | ❌ |
+| Features                                                                    |    |
+| --------------------------------------------------------------------------- | -- |
+| Realtime processing of relational database query + arbitrary transformation | ✔️ |
+| Client streaming over websocket                                             | ✔️ |
+| Offline sync for clients                                                    | ✔️ |
+| Minimal network load (incremental updates)                                  | ✔️ |
+| Can be embedded into an existing project                                    | ✔️ |
+| You need to adopt a new database                                            | ❌ |
 
 </div>
 
