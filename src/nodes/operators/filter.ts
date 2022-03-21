@@ -17,10 +17,10 @@ export class NodeFilterOperator<T> extends NodeOperator1Input<Array<T>, Array<T>
      */
     constructor(nodeI1: Node<Array<T>>, match: any) {
         super(
-            async (input) =>
+            async (input: Array<T>) =>
                 _.filter(input,
-                    (u) => _.every(_.map(_.keys(match),
-                        (k) => _.isEqual(match[k], u[k])
+                    (u: T) => _.every(_.map(_.keys(match),
+                        (k: string) => _.isEqual(match[k], (u as any)[k])
                     ))
                 )
             , nodeI1

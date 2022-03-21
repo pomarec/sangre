@@ -18,7 +18,7 @@ export class ArraySource<Row> extends Node<Array<Row>> {
         this.setRows(
             ([...(this.lastValue || [])].map(map)).filter(
                 (e) => !_.isNil(e)
-            )
+            ) as Array<Row>
         )
     }
 
