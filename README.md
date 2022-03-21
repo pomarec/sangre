@@ -55,7 +55,7 @@ The websocket streams the updates as this data changes in the database.
 
 Below is a screencast of this example with a demonstration of its websocket output :
 
-[![Screencast of example](doc/screencast.gif "Screencast of example")](https://raw.githubusercontent.com/pomarec/sangre/main/doc/screencast.gif)
+[![Screencast of example](doc/screencast.gif "Screencast of example")](https://raw.githubusercontent.com/pomarec/sangre/main/doc/screencast.webm)
 
 Another working example is showcased with a flutter client [here](example/).
 
