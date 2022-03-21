@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [ typescript ]
+    branches: [ main ]
   pull_request:
-    branches: [ typescript ]
+    branches: [ main ]
 
 jobs:
   test:
