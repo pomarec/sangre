@@ -32,9 +32,6 @@ export abstract class Node3Input<Input1, Input2, Input3, Output> extends NodeWit
         this.nodeInput3 = nodeInput3
         this.nodeId = `${this.nodeBaseName}[${nodeInput1.nodeId}, ${nodeInput2.nodeId}, , ${nodeInput3.nodeId}]`
         appendAsyncConstructor(this, async () => {
-            this.nodeInput1 = await nodeInput1
-            this.nodeInput2 = await nodeInput2
-            this.nodeInput3 = await nodeInput3
             await this.setupInputsProcessing([nodeInput1, nodeInput2, nodeInput3])
         })
     }

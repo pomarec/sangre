@@ -28,7 +28,6 @@ export abstract class Node1Input<Input1, Output> extends NodeWithInput<Output> {
         this.nodeInput = nodeInput
         this.nodeId = `${this.nodeBaseName}[${nodeInput.nodeId}]`
         appendAsyncConstructor(this, async () => {
-            this.nodeInput = await nodeInput
             await this.setupInputsProcessing([nodeInput])
         })
     }
