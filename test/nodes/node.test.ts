@@ -36,7 +36,7 @@ describe("Node", async function () {
 
         it('Multiple subscribers', async function () {
             const node = await new Node<string>()
-            var emitted = []
+            var emitted = new Array<string>()
             const subscription1 = node.subscribe({
                 next: (d) => emitted.push(d)
             })
@@ -54,7 +54,7 @@ describe("Node", async function () {
 
         it('Unsibscribe', async function () {
             const node = await new Node<string>()
-            var emitted = []
+            var emitted = new Array<string>()
             const subscription = node.subscribe({
                 next: (d) => emitted.push(d)
             })
