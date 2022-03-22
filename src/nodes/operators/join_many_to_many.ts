@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Node } from '../node'
-import { Node3Input } from '../node_input'
+import { Node3Input } from '../node_with_input/node_3_input'
 
 /**
  * Acts like an SQL many-to-many join, based on a pivot table.

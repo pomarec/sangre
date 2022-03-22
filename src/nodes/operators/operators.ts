@@ -1,5 +1,6 @@
 import { Node } from "../node"
-import { Node1Input, Node2Input } from "../node_input"
+import { Node1Input } from '../node_with_input/node_1_input'
+import { Node2Input } from '../node_with_input/node_2_input'
 
 /** 
  * A node operator is a node which process() is based on a operator.

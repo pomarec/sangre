@@ -2,15 +2,22 @@ import { AsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
 import { Client } from 'pg'
 import { v4 as uuidv4 } from 'uuid'
-import { SerialExecutionQueue } from '../utils'
+
+export interface Observer<T> {
+    next(value: T): void
+}
+
+export interface Subscription {
+    unsubscribe(): void
+}
 
 /** 
  * A node is the main concept of sangre. Each node is a transformation
  * of data (aggregates, filter, mutates, etc.). Data flows from sources
- * (ndes that emits data by themselves) through nodes forming an acyclic
+ * (nodes that emits data by themselves) through nodes forming an acyclic
  * directed graph.
  */
-export abstract class Node<Output> extends AsyncConstructor {
+export class Node<Output> extends AsyncConstructor {
     nodeId: string
 
     /** Stores the last value (output) emited */
@@ -24,16 +31,6 @@ export abstract class Node<Output> extends AsyncConstructor {
      * by this node.
      */
     private observers = new Map<string, Observer<Output>>()
-
-    /** Set of subscriptions this node holds on other nodes. */
-    private inputsSubscriptions = new Set<Subscription>()
-
-    /** 
-     * Serial exectution queue of this node's transformations.
-     * Makes sure every transformations is done in the same order
-     * as inputs changes.
-     */
-    protected executionQueue = new SerialExecutionQueue()
 
     constructor() {
         super(async () => { })
@@ -82,61 +79,14 @@ export abstract class Node<Output> extends AsyncConstructor {
     }
 
     /**
-     * In case of this node subscribing ot other nodes as inputs.
-     * This methods plug them and make sure this.processUntyped() is
-     * called each time one of its inputs emit new data.
-     */
-    protected async setupInputsProcessing(inputNodes: Array<Node<any>>) {
-        var inputsLastData = new Array(inputNodes.length)
-        inputsLastData.fill(undefined)
-        inputNodes.forEach((node, index) =>
-            this.inputsSubscriptions.add(
-                inputNodes[index].subscribe({
-                    next: (data) => {
-                        inputsLastData[index] = data
-                        if (_.every(inputsLastData, (e) => !_.isNil(e))) {
-                            const inputs = _.clone(inputsLastData)
-                            this.executionQueue.queue(
-                                async () => {
-                                    try {
-                                        const output = await this.processUntyped(inputs)
-                                        this.emit(output)
-                                    } catch (e) {
-                                        if (!(e instanceof NodeSkipProcess))
-                                            throw e
-                                    }
-                                }
-                            )
-                        }
-                    }
-                })
-            )
-        )
-    }
-
-    /**
-     * Must be overwritten if this node subscribes to other nodes.
-     * @param inputs array of data emitted by nodes setup in 
-     * this.setupInputsProcessing()
-     */
-    protected async processUntyped(inputs: Array<any>): Promise<Output> {
-        throw Error("Not implemented")
-    }
-
-
-    /**
      * Closes any dependancies of this node.
-     * 
-     * Eg: closing subscriptions to input nodes.
+     * Equivalent of class destructor.
      */
     async close() {
         if (this.isClosed)
             throw Error("Can't close node twice")
         else {
             this.isClosed = true
-            for (var subscription of this.inputsSubscriptions)
-                subscription.unsubscribe()
-            this.inputsSubscriptions.clear()
         }
     }
 
@@ -168,23 +118,4 @@ export abstract class Node<Output> extends AsyncConstructor {
     async takeValue(skipCurrentValue?: boolean): Promise<Output> {
         return (await this.take(1, skipCurrentValue))[0]
     }
-}
-
-/** 
- * Throw this exception in process() when you don't want to
- * react to the new input.
- */
-export class NodeSkipProcess extends Error {
-    constructor(m: string) {
-        super(m)
-        Object.setPrototypeOf(this, NodeSkipProcess.prototype)
-    }
-}
-
-interface Observer<T> {
-    next(value: T): void
-}
-
-interface Subscription {
-    unsubscribe(): void
 }

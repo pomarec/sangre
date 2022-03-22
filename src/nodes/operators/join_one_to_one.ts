@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Node } from '../node'
-import { Node2Input } from '../node_input'
+import { Node2Input } from '../node_with_input/node_2_input'
 
 /**
  * Acts like an SQL one-to-one join.

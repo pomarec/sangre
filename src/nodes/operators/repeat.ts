@@ -1,7 +1,7 @@
 
 import _ from "lodash"
 import { Node } from "../node"
-import { Node1Input } from "../node_input"
+import { Node1Input } from '../node_with_input/node_1_input'
 
 /**
  * Repeats the last data of its input

@@ -1,8 +1,9 @@
 import * as jsonpatch from 'fast-json-patch'
 import _ from "lodash"
 import { Client } from "pg"
-import { Node, NodeSkipProcess } from "../node"
-import { Node1Input } from "../node_input"
+import { Node } from '../node'
+import { Node1Input } from '../node_with_input/node_1_input'
+import { NodeSkipProcess } from '../node_with_input/node_with_input'
 
 type DiffedData = { revision: number, from: number, diffs: Array<jsonpatch.Operation> }
 
