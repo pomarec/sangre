@@ -34,15 +34,7 @@ export class Node<Output> extends AsyncConstructor {
 
     constructor() {
         super(async () => { })
-        this.nodeId = this.nodeBaseName
-    }
-
-    /**
-     * Override this methods when you want a more readable
-     * node name than its class name.
-    */
-    get nodeBaseName() {
-        return this.constructor.name
+        this.nodeId = this.constructor.name
     }
 
     /** Helper to retrieve the first postgres `Client` in

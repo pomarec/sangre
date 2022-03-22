@@ -15,10 +15,6 @@ export abstract class Node1Input<Input1, Output> extends NodeWithInput<Output> {
      */
     abstract process(input: Input1): Promise<Output>
 
-    get nodeBaseName() {
-        return "N1I"
-    }
-
     get parentPostgresClient(): Client | undefined {
         return this.nodeInput.parentPostgresClient
     }
@@ -26,7 +22,7 @@ export abstract class Node1Input<Input1, Output> extends NodeWithInput<Output> {
     constructor(nodeInput: Node<Input1>) {
         super()
         this.nodeInput = nodeInput
-        this.nodeId = `${this.nodeBaseName}[${nodeInput.nodeId}]`
+        this.nodeId = `N1I[${nodeInput.nodeId}]`
         appendAsyncConstructor(this, async () => {
             await this.setupInputsProcessing([nodeInput])
         })
