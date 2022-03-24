@@ -1,5 +1,7 @@
 export * from './express'
+export * from './functional'
 export * from './nodes/node'
+export * from './nodes/node_factory'
 export * from './nodes/node_with_input/node_1_input'
 export * from './nodes/node_with_input/node_2_input'
 export * from './nodes/node_with_input/node_3_input'

@@ -5,9 +5,9 @@ import { randomInt } from 'crypto'
 import { describe } from 'mocha'
 import { Client } from 'pg'
 import { Env } from '../env'
-import { DB } from '../src/functionnal'
+import { DB } from '../src'
 
-describe("Functionnal", async function () {
+describe("Functional", async function () {
     beforeEach(async function () {
         this.postgresClient = new Client(Env.postgresUri)
         await this.postgresClient.connect()

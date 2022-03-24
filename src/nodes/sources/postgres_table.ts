@@ -4,6 +4,7 @@ import { appendAsyncConstructor } from "async-constructor"
 import _ from "lodash"
 import { Client } from 'pg'
 import { delayed } from "../../utils"
+import { NodeFactory } from "../node_factory"
 import { ArraySource } from "./array"
 
 /**
@@ -15,6 +16,7 @@ import { ArraySource } from "./array"
  * One of two mechanism can be used, polling (every second) or realtime (needs
  * a supabase-realtime client connected to a supabse-realtime server).
  */
+@NodeFactory.factorizeClass
 export class PostgresTableSource extends ArraySource<Object> {
     readonly postgresClient: Client
     readonly realtimeClient?: RealtimeClient
@@ -34,6 +36,12 @@ export class PostgresTableSource extends ArraySource<Object> {
             else
                 await this.setupRealtime()
         })
+    }
+
+    static compareForNew<T>(node: PostgresTableSource, postgresClient: Client, tableName: string, realtimeClient?: RealtimeClient): boolean {
+        return node.postgresClient == postgresClient
+            && node.tableName == tableName
+            && node.realtimeClient == realtimeClient
     }
 
     get parentPostgresClient(): Client | undefined {

@@ -5,8 +5,7 @@ import express from 'express'
 import expressWs from 'express-ws'
 import { Client } from 'pg'
 import { Env } from '../env'
-import { expressSangre } from '../src'
-import { DB } from '../src/functionnal'
+import { DB, expressSangre } from '../src'
 
 async function main() {
     const { app, postgresClient } = await setupApp()

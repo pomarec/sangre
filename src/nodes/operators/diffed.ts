@@ -19,7 +19,7 @@ type DiffedData = { revision: number, from: number, diffs: Array<jsonpatch.Opera
  */
 export class Diffed<T> extends Node1Input<T, DiffedData> {
     private postgresClient: Client
-    readonly tableName: string
+    readonly tableName = `sangre_nodes_diff_history`
     revision = 0
     lastInput?: T
     historyTableCreated = false
@@ -27,7 +27,6 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
     constructor(nodeI1: Node<T>, postgresClient?: Client) {
         super(nodeI1)
         this.postgresClient = (postgresClient || this.parentPostgresClient) as Client
-        this.tableName = `sangre_nodes_diff_history`
         // this.createHistoryTable() is called in this.process()
     }
 

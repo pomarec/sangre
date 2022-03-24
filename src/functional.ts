@@ -1,7 +1,6 @@
 import { RealtimeClient } from "@supabase/realtime-js"
 import { Client } from "pg"
-import { JoinManyToMany, NodeFilterOperator, NodeGetOperator, NodeOperator1Input, PostgresTableSource } from "."
-import { Node } from '../src'
+import { JoinManyToMany, Node, NodeFilterOperator, NodeGetOperator, NodeOperator1Input, PostgresTableSource } from "."
 import { NodeRepeat } from "./nodes/operators/repeat"
 
 /** 
