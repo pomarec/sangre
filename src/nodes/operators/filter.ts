@@ -1,13 +1,11 @@
 import _ from "lodash"
 import { Node } from "../node"
-import { NodeFactory } from "../node_factory"
 import { NodeOperator1Input } from "./operators"
 
 /** 
  * Filters items of it's input. 
  * Its input data must be an array.
  */
-@NodeFactory.factorizeClass
 export class NodeFilterOperator<T> extends NodeOperator1Input<Array<T>, Array<T>> {
     readonly match: any
 
@@ -31,10 +29,9 @@ export class NodeFilterOperator<T> extends NodeOperator1Input<Array<T>, Array<T>
         this.match = match
     }
 
-    static compareForNew<T>(node: NodeFilterOperator<T>, nodeInput: Node<Array<T>>, match: any): boolean {
-        const a = node.nodeInput == nodeInput
-        const b = _.isEqual(match, node.match)
-        return a && b
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(node: NodeFilterOperator<any>, nodeInput: Node<Array<any>>, match: any, ...args: Array<any>): boolean {
+        return super.compareForNew(node, nodeInput) && _.isEqual(match, node.match)
     }
 }
 

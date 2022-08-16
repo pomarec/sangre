@@ -25,9 +25,10 @@ export class JoinOneToOne<I1, I2>
      */
     readonly joinedKey: string | ((item: I1, matching: I2) => void)
 
-    constructor(nodeI1: Node<Array<I1>>,
-        joinKey: string | ((item: I1) => any),
+    constructor(
+        nodeI1: Node<Array<I1>>,
         nodeI2: Node<Array<I2>>,
+        joinKey: string | ((item: I1) => any),
         matchingKey: string | ((item: I2) => any),
         joinedKey?: string | ((item: I1, matching: I2) => any)
     ) {
@@ -57,5 +58,21 @@ export class JoinOneToOne<I1, I2>
                 }
             return input1Element
         })
+    }
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(
+        node: JoinOneToOne<any, any>,
+        nodeI1: Node<Array<any>>,
+        nodeI2: Node<Array<any>>,
+        joinKey: string | ((item: any) => any),
+        matchingKey: string | ((item: any) => any),
+        joinedKey?: string | ((item: any, matching: any) => any),
+        ...args: Array<any>
+    ): boolean {
+        return super.compareForNew(node, nodeI1, nodeI2)
+            && _.isEqual(joinKey, node.joinKey)
+            && _.isEqual(matchingKey, node.matchingKey)
+            && _.isEqual(joinedKey, node.joinedKey)
     }
 }

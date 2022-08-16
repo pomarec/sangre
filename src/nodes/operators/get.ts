@@ -7,6 +7,7 @@ import { NodeOperator1Input } from "./operators"
  * Its input data must be an array.
  */
 export class NodeGetOperator<T> extends NodeOperator1Input<Array<T>, T> {
+    readonly match: any
 
     /** 
      * @param match is a map of (possibly multiple) key-values that will filter the input
@@ -15,7 +16,7 @@ export class NodeGetOperator<T> extends NodeOperator1Input<Array<T>, T> {
      * Eg: if match is `{id: 1}` then the result will be the first item of
      * input that has a field `id` whose value is `1`
      */
-    constructor(nodeI1: Node<Array<T>>, match: any) {
+    constructor(nodeInput: Node<Array<T>>, match: any) {
         super(
             (input: Array<any>) =>
                 _.find(input,
@@ -23,8 +24,14 @@ export class NodeGetOperator<T> extends NodeOperator1Input<Array<T>, T> {
                         (k) => _.isEqual(match[k], u[k])
                     ))
                 )
-            , nodeI1
+            , nodeInput
         )
+        this.match = match
+    }
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(node: NodeGetOperator<any>, nodeInput: Node<Array<any>>, match: any, ...args: Array<any>): boolean {
+        return super.compareForNew(node, nodeInput) && _.isEqual(match, node.match)
     }
 }
 

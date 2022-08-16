@@ -33,4 +33,9 @@ export abstract class Node2Input<Input1, Input2, Output> extends NodeWithInput<O
     processUntyped(inputs: Array<any>): Promise<Output> {
         return this.process(inputs[0] as Input1, inputs[1] as Input2)
     }
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(node: Node2Input<any, any, any>, nodeInput1: Node<any>, nodeInput2: Node<any>, ...args: Array<any>): boolean {
+        return node.nodeInput1 == nodeInput1 && node.nodeInput2 == nodeInput2
+    }
 }

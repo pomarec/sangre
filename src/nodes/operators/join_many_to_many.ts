@@ -36,14 +36,14 @@ export class JoinManyToMany<I1, I2, I3>
      */
     readonly jtValueKey: string | ((item: I2) => string)
 
-    constructor(nodeI1: Node<Array<I1>>,
-        joinKey: string | ((item: I1) => any),
-        nodeI2: Node<Array<I2>>,
-        jtJoinKey: string | ((item: I2) => string),
-        jtValueKey: string | ((item: I2) => string),
-        nodeI3: Node<Array<I3>>,
-        matchingKey: string | ((item: I3) => any),
-        joinedKey?: string | ((item: I1, matching: Array<I3>) => void),
+    constructor(nodeI1: Node<Array<any>>,
+        nodeI2: Node<Array<any>>,
+        nodeI3: Node<Array<any>>,
+        joinKey: string | ((item: any) => any),
+        jtJoinKey: string | ((item: any) => string),
+        jtValueKey: string | ((item: any) => string),
+        matchingKey: string | ((item: any) => any),
+        joinedKey?: string | ((item: any, matching: Array<any>) => void),
     ) {
         super(nodeI1, nodeI2, nodeI3)
         this.joinKey = joinKey
@@ -87,5 +87,26 @@ export class JoinManyToMany<I1, I2, I3>
 
             return input1Element
         })
+    }
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(
+        node: JoinManyToMany<any, any, any>,
+        nodeI1: Node<Array<any>>,
+        nodeI2: Node<Array<any>>,
+        nodeI3: Node<Array<any>>,
+        joinKey: string | ((item: any) => any),
+        jtJoinKey: string | ((item: any) => string),
+        jtValueKey: string | ((item: any) => string),
+        matchingKey: string | ((item: any) => any),
+        joinedKey?: string | ((item: any, matching: Array<any>) => void),
+        ...args: Array<any>
+    ): boolean {
+        return super.compareForNew(node, nodeI1, nodeI2, nodeI3)
+            && _.isEqual(joinKey, node.joinKey)
+            && _.isEqual(jtJoinKey, node.jtJoinKey)
+            && _.isEqual(jtValueKey, node.joinKey)
+            && _.isEqual(matchingKey, node.matchingKey)
+            && _.isEqual(joinedKey, node.joinedKey)
     }
 }

@@ -54,6 +54,11 @@ export class Diffed<T> extends Node1Input<T, DiffedData> {
         }
     }
 
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(node: Diffed<any>, nodeI1: Node<any>, postgresClient?: Client, ...args: Array<any>): boolean {
+        return super.compareForNew(node, nodeI1) && node.revision == 0 && node.postgresClient == postgresClient
+    }
+
     async diffsFromRevision(previousRevision = 0): Promise<DiffedData> {
         let previousValue = ""
         if (previousRevision > 0) {

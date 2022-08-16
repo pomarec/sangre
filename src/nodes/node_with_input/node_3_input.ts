@@ -35,5 +35,11 @@ export abstract class Node3Input<Input1, Input2, Input3, Output> extends NodeWit
     processUntyped(inputs: Array<any>): Promise<Output> {
         return this.process(inputs[0] as Input1, inputs[1] as Input2, inputs[2] as Input3)
     }
+
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(node: Node3Input<any, any, any, any>, nodeInput1: Node<any>, nodeInput2: Node<any>, nodeInput3: Node<any>, ...args: Array<any>): boolean {
+        return node.nodeInput1 == nodeInput1 && node.nodeInput2 == nodeInput2 && node.nodeInput3 == nodeInput3
+    }
 }
 

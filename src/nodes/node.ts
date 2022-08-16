@@ -2,6 +2,7 @@ import { AsyncConstructor } from 'async-constructor'
 import _ from 'lodash'
 import { Client } from 'pg'
 import { v4 as uuidv4 } from 'uuid'
+import { NodeFactory } from './node_factory'
 
 export interface Observer<T> {
     next(value: T): void
@@ -17,6 +18,7 @@ export interface Subscription {
  * (nodes that emits data by themselves) through nodes forming an acyclic
  * directed graph.
  */
+@NodeFactory.factorizeClass
 export class Node<Output> extends AsyncConstructor {
     nodeId: string
 
@@ -83,6 +85,11 @@ export class Node<Output> extends AsyncConstructor {
     }
 
     // Utils
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(node: Node<any>, ...args: Array<any>): boolean {
+        return false
+    }
 
     /** 
      * Get the next "length" values emited by this node.

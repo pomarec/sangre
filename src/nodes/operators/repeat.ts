@@ -47,5 +47,16 @@ export class NodeRepeat<T> extends Node1Input<T, T> {
         this.resetTimer(true)
         await super.close()
     }
+
+    /** See NodeFactory.factorizeClass */
+    static compareForNew(
+        node: NodeRepeat<any>,
+        nodeI1: Node<any>,
+        intervalInMs: number = 5000,
+        ...args: Array<any>
+    ): boolean {
+        return super.compareForNew(node, nodeI1)
+            && _.isEqual(intervalInMs, node.intervalInMs)
+    }
 }
 
